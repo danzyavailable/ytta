@@ -19,134 +19,91 @@ gui.Name = "DanHub"
 gui.ResetOnSpawn = false
 gui.Parent = game.CoreGui
 
--------------------------------------------------
+--------------------------------------------------
 -- INTRO ANIMATION
--------------------------------------------------
+--------------------------------------------------
 
-local introFrame = Instance.new("Frame")
-introFrame.Size = UDim2.new(1,0,1,0)
-introFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-introFrame.BackgroundTransparency = 1
-introFrame.Parent = gui
+local intro = Instance.new("TextLabel")
+intro.Size = UDim2.new(0,400,0,80)
+intro.Position = UDim2.new(0.5,-200,0.6,0)
+intro.BackgroundTransparency = 1
+intro.Text = "dansskiee"
+intro.Font = Enum.Font.GothamBlack
+intro.TextScaled = true
+intro.TextColor3 = Color3.new(1,1,1)
+intro.TextTransparency = 1
+intro.Parent = gui
 
-local introText = Instance.new("TextLabel")
-introText.Size = UDim2.new(0,400,0,80)
-introText.Position = UDim2.new(0.5,-200,0.6,0)
-introText.BackgroundTransparency = 1
-introText.Text = "dansskiee"
-introText.TextScaled = true
-introText.Font = Enum.Font.GothamBlack
-introText.TextColor3 = Color3.fromRGB(255,255,255)
-introText.TextTransparency = 1
-introText.Parent = introFrame
-
-local glow = Instance.new("UIStroke")
-glow.Color = Color3.fromRGB(120,120,255)
-glow.Thickness = 2
-glow.Parent = introText
-
-TweenService:Create(introFrame,TweenInfo.new(0.6),{
-BackgroundTransparency = 0.2
-}):Play()
-
-TweenService:Create(introText,TweenInfo.new(1,Enum.EasingStyle.Quart),{
+TweenService:Create(intro,TweenInfo.new(1),{
 TextTransparency = 0,
 Position = UDim2.new(0.5,-200,0.45,0)
 }):Play()
 
 task.wait(2)
 
-TweenService:Create(introFrame,TweenInfo.new(1),{
-BackgroundTransparency = 1
-}):Play()
-
-TweenService:Create(introText,TweenInfo.new(1),{
-TextTransparency = 1
+TweenService:Create(intro,TweenInfo.new(1),{
+TextTransparency = 1,
+Position = UDim2.new(0.5,-200,0.35,0)
 }):Play()
 
 task.wait(1)
+intro:Destroy()
 
-introFrame:Destroy()
-
--------------------------------------------------
--- MAIN FRAME
--------------------------------------------------
+--------------------------------------------------
+-- MAIN FRAME (SAMA SEPERTI AWAL)
+--------------------------------------------------
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,320,0,240)
-frame.Position = UDim2.new(0,120,0,120)
-frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.Size = UDim2.new(0,300,0,260)
+frame.Position = UDim2.new(0,100,0,100)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.BorderSizePixel = 0
 frame.Parent = gui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0,8)
-corner.Parent = frame
-
--------------------------------------------------
--- TITLE BAR
--------------------------------------------------
-
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1,0,0,36)
-titleBar.BackgroundColor3 = Color3.fromRGB(40,40,40)
-titleBar.Parent = frame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0,8)
-titleCorner.Parent = titleBar
-
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,-40,1,0)
-title.Position = UDim2.new(0,10,0,0)
-title.BackgroundTransparency = 1
+title.Size = UDim2.new(1,0,0,35)
+title.BackgroundColor3 = Color3.fromRGB(35,35,35)
 title.Text = "Dan Hub"
 title.TextColor3 = Color3.new(1,1,1)
 title.TextSize = 18
-title.Font = Enum.Font.GothamBold
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = titleBar
+title.Font = Enum.Font.SourceSansBold
+title.Parent = frame
 
--------------------------------------------------
+--------------------------------------------------
 -- MINIMIZE BUTTON
--------------------------------------------------
+--------------------------------------------------
 
 local minimize = Instance.new("TextButton")
-minimize.Size = UDim2.new(0,30,0,24)
-minimize.Position = UDim2.new(1,-34,0,6)
+minimize.Size = UDim2.new(0,30,0,20)
+minimize.Position = UDim2.new(1,-35,0,7)
 minimize.Text = "-"
-minimize.TextSize = 18
-minimize.Font = Enum.Font.GothamBold
-minimize.BackgroundColor3 = Color3.fromRGB(60,60,60)
+minimize.BackgroundColor3 = Color3.fromRGB(50,50,50)
 minimize.TextColor3 = Color3.new(1,1,1)
-minimize.Parent = titleBar
+minimize.Parent = title
 
-local minCorner = Instance.new("UICorner")
-minCorner.CornerRadius = UDim.new(0,6)
-minCorner.Parent = minimize
-
--------------------------------------------------
+--------------------------------------------------
 -- CONTAINER
--------------------------------------------------
+--------------------------------------------------
 
 local container = Instance.new("Frame")
-container.Size = UDim2.new(1,-10,1,-46)
-container.Position = UDim2.new(0,5,0,40)
+container.Size = UDim2.new(1,0,1,-35)
+container.Position = UDim2.new(0,0,0,35)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
 local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,6)
+layout.Padding = UDim.new(0,5)
 layout.Parent = container
 
--------------------------------------------------
--- DRAG SYSTEM
--------------------------------------------------
+--------------------------------------------------
+-- DRAG SYSTEM (DIPERBAIKI)
+--------------------------------------------------
 
 local dragging = false
 local dragStart
 local startPos
 
-titleBar.InputBegan:Connect(function(input)
+title.InputBegan:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseButton1 then
 dragging = true
 dragStart = input.Position
@@ -154,7 +111,7 @@ startPos = frame.Position
 end
 end)
 
-titleBar.InputEnded:Connect(function(input)
+title.InputEnded:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseButton1 then
 dragging = false
 end
@@ -162,19 +119,22 @@ end)
 
 UIS.InputChanged:Connect(function(input)
 if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+
 local delta = input.Position - dragStart
+
 frame.Position = UDim2.new(
 startPos.X.Scale,
 startPos.X.Offset + delta.X,
 startPos.Y.Scale,
 startPos.Y.Offset + delta.Y
 )
+
 end
 end)
 
--------------------------------------------------
+--------------------------------------------------
 -- MINIMIZE LOGIC
--------------------------------------------------
+--------------------------------------------------
 
 local minimized = false
 
@@ -184,41 +144,37 @@ minimized = not minimized
 
 if minimized then
 container.Visible = false
-frame.Size = UDim2.new(0,320,0,36)
+frame.Size = UDim2.new(0,300,0,35)
 minimize.Text = "+"
 else
 container.Visible = true
-frame.Size = UDim2.new(0,320,0,240)
+frame.Size = UDim2.new(0,300,0,260)
 minimize.Text = "-"
 end
 
 end)
 
--------------------------------------------------
--- TOGGLE CREATOR
--------------------------------------------------
+--------------------------------------------------
+-- TOGGLE BUTTON
+--------------------------------------------------
 
 local function createToggle(text,callback)
 
 local btn = Instance.new("TextButton")
-btn.Size = UDim2.new(1,0,0,34)
-btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+btn.Size = UDim2.new(1,-10,0,35)
+btn.Position = UDim2.new(0,5,0,0)
+btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 btn.TextColor3 = Color3.new(1,1,1)
 btn.Text = text.." : OFF"
-btn.Font = Enum.Font.Gotham
-btn.TextSize = 15
+btn.Font = Enum.Font.SourceSans
+btn.TextSize = 16
 btn.Parent = container
-
-local c = Instance.new("UICorner")
-c.CornerRadius = UDim.new(0,6)
-c.Parent = btn
 
 local state = false
 
 btn.MouseButton1Click:Connect(function()
 
 state = not state
-
 btn.Text = text.." : "..(state and "ON" or "OFF")
 
 callback(state)
@@ -227,9 +183,9 @@ end)
 
 end
 
--------------------------------------------------
+--------------------------------------------------
 -- FEATURES
--------------------------------------------------
+--------------------------------------------------
 
 createToggle("Fly",function(v)
 fly = v
@@ -247,9 +203,9 @@ createToggle("Infinite Jump",function(v)
 infiniteJump = v
 end)
 
--------------------------------------------------
+--------------------------------------------------
 -- SYSTEMS
--------------------------------------------------
+--------------------------------------------------
 
 RunService.RenderStepped:Connect(function()
 
