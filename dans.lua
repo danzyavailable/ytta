@@ -1,267 +1,162 @@
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local MinimizeBtn = Instance.new("TextButton")
-local Footer = Instance.new("TextLabel")
-local Container = Instance.new("Frame")
-local UIListLayout = Instance.new("UIListLayout")
-
--- Services
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local workspace = game:GetService("Workspace")
+local UIS = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
 
--------------------------------------------------
--- INTRO ANIMATION (LOGO + TEXT)
--------------------------------------------------
+-- VARIABLES
+local fly = false
+local flySpeed = 50
+local godmode = false
+local instantInteract = false
+local infiniteJump = false
 
-local IntroGui = Instance.new("ScreenGui")
-IntroGui.Parent = game.CoreGui
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "DanHub"
+gui.ResetOnSpawn = false
+gui.Parent = game.CoreGui
 
-local Logo = Instance.new("ImageLabel")
-Logo.Parent = IntroGui
-Logo.Size = UDim2.new(0,120,0,120)
-Logo.Position = UDim2.new(0.5,-60,0.35,0)
-Logo.BackgroundTransparency = 1
-Logo.Image = "rbxassetid://1234567890" -- ganti dengan logo kamu
-Logo.ImageTransparency = 1
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,300,0,320)
+frame.Position = UDim2.new(0,100,0,100)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+frame.BorderSizePixel = 0
+frame.Parent = gui
 
-local IntroText = Instance.new("TextLabel")
-IntroText.Parent = IntroGui
-IntroText.Size = UDim2.new(0,400,0,60)
-IntroText.Position = UDim2.new(0.5,-200,0.55,0)
-IntroText.BackgroundTransparency = 1
-IntroText.Text = "dansskiee"
-IntroText.Font = Enum.Font.GothamBlack
-IntroText.TextScaled = true
-IntroText.TextColor3 = Color3.fromRGB(255,255,255)
-IntroText.TextTransparency = 1
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0,35)
+title.BackgroundColor3 = Color3.fromRGB(35,35,35)
+title.Text = "Dan Hub"
+title.TextColor3 = Color3.new(1,1,1)
+title.TextSize = 18
+title.Font = Enum.Font.SourceSansBold
+title.Parent = frame
 
-TweenService:Create(Logo,TweenInfo.new(1,Enum.EasingStyle.Quart),{
-	ImageTransparency = 0,
-	Position = UDim2.new(0.5,-60,0.30,0)
-}):Play()
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1,0,1,-35)
+container.Position = UDim2.new(0,0,0,35)
+container.BackgroundTransparency = 1
+container.Parent = frame
 
-TweenService:Create(IntroText,TweenInfo.new(1,Enum.EasingStyle.Quart),{
-	TextTransparency = 0,
-	Position = UDim2.new(0.5,-200,0.48,0)
-}):Play()
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,5)
+layout.Parent = container
 
-task.wait(2)
+-- DRAG
+local dragging = false
+local dragInput
+local dragStart
+local startPos
 
-TweenService:Create(Logo,TweenInfo.new(1),{
-	ImageTransparency = 1,
-	Position = UDim2.new(0.5,-60,0.25,0)
-}):Play()
-
-TweenService:Create(IntroText,TweenInfo.new(1),{
-	TextTransparency = 1,
-	Position = UDim2.new(0.5,-200,0.40,0)
-}):Play()
-
-task.wait(1)
-IntroGui:Destroy()
-
--------------------------------------------------
--- GUI SETUP (SAMA SEPERTI PUNYA KAMU)
--------------------------------------------------
-
-ScreenGui.Parent = game.CoreGui
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-MainFrame.Position = UDim2.new(0.1, 0, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 250, 0, 240)
-MainFrame.Active = true
-
-local MainCorner = Instance.new("UICorner", MainFrame)
-MainCorner.CornerRadius = UDim.new(0, 15)
-
-Title.Parent = MainFrame
-Title.Size = UDim2.new(1, 0, 0, 45)
-Title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Title.Text = "Script By Dansskiee"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
-Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 15)
-
--------------------------------------------------
--- DRAG SYSTEM
--------------------------------------------------
-
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-	local delta = input.Position - dragStart
-	MainFrame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
-	)
+title.InputBegan:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = true
+dragStart = input.Position
+startPos = frame.Position
 end
-
-Title.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 
-	or input.UserInputType == Enum.UserInputType.Touch then
-
-		dragging = true
-		dragStart = input.Position
-		startPos = MainFrame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
 end)
 
-Title.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement 
-	or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
+title.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = false
+end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		update(input)
-	end
+UIS.InputChanged:Connect(function(input)
+if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+local delta = input.Position - dragStart
+frame.Position = UDim2.new(
+startPos.X.Scale,
+startPos.X.Offset + delta.X,
+startPos.Y.Scale,
+startPos.Y.Offset + delta.Y
+)
+end
 end)
 
--------------------------------------------------
--- MINIMIZE BUTTON
--------------------------------------------------
+-- BUTTON CREATOR
+local function createToggle(text,callback)
 
-MinimizeBtn.Parent = MainFrame
-MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-MinimizeBtn.Position = UDim2.new(1, -35, 0, 7)
-MinimizeBtn.BackgroundTransparency = 1
-MinimizeBtn.Text = "▼"
-MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.TextSize = 18
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.new(1,-10,0,35)
+btn.Position = UDim2.new(0,5,0,0)
+btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+btn.TextColor3 = Color3.new(1,1,1)
+btn.Text = text.." : OFF"
+btn.Font = Enum.Font.SourceSans
+btn.TextSize = 16
+btn.Parent = container
 
-local minimized = false
+local state = false
 
-MinimizeBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-
-	MainFrame:TweenSize(
-		minimized and UDim2.new(0,250,0,45) or UDim2.new(0,250,0,240),
-		"Out","Quart",0.3,true
-	)
-
-	Container.Visible = not minimized
-	Footer.Visible = not minimized
-	MinimizeBtn.Text = minimized and "▲" or "▼"
+btn.MouseButton1Click:Connect(function()
+state = not state
+btn.Text = text.." : "..(state and "ON" or "OFF")
+callback(state)
 end)
-
--------------------------------------------------
--- FOOTER
--------------------------------------------------
-
-Footer.Parent = MainFrame
-Footer.Size = UDim2.new(1, 0, 0, 25)
-Footer.Position = UDim2.new(0, 0, 1, -25)
-Footer.BackgroundTransparency = 1
-Footer.Text = "Escape Tsunami For Brainrots"
-Footer.TextColor3 = Color3.fromRGB(200, 200, 200)
-Footer.Font = Enum.Font.GothamBold
-Footer.TextSize = 11
-
--------------------------------------------------
--- CONTAINER
--------------------------------------------------
-
-Container.Parent = MainFrame
-Container.Position = UDim2.new(0, 10, 0, 55)
-Container.Size = UDim2.new(1, -20, 0, 150)
-Container.BackgroundTransparency = 1
-
-UIListLayout.Parent = Container
-UIListLayout.Padding = UDim.new(0, 8)
-
--------------------------------------------------
--- TOGGLE HELPER
--------------------------------------------------
-
-local function createToggle(txt, callback)
-
-	local btn = Instance.new("TextButton", Container)
-	btn.Size = UDim2.new(1, 0, 0, 35)
-	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	btn.Text = txt .. ": OFF"
-	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-
-	local enabled = false
-
-	btn.MouseButton1Click:Connect(function()
-		enabled = not enabled
-		btn.Text = txt .. (enabled and ": ON" or ": OFF")
-
-		btn.BackgroundColor3 =
-			enabled and Color3.fromRGB(50,150,50)
-			or Color3.fromRGB(30,30,30)
-
-		callback(enabled)
-	end)
 
 end
 
--------------------------------------------------
--- INSTANT INTERACT
--------------------------------------------------
+-- FEATURES
 
-local instantEnabled = false
+createToggle("Fly",function(v)
+fly = v
+end)
 
-createToggle("Instant Interact", function(state)
+createToggle("Godmode",function(v)
+godmode = v
+end)
 
-	instantEnabled = state
+createToggle("Instant Interact",function(v)
+instantInteract = v
+end)
 
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("ProximityPrompt") then
-			v.HoldDuration = state and 0 or 1
-		end
-	end
+createToggle("Infinite Jump",function(v)
+infiniteJump = v
+end)
+
+-- FLY SYSTEM
+RunService.RenderStepped:Connect(function()
+
+local char = player.Character
+if not char then return end
+
+local hum = char:FindFirstChildOfClass("Humanoid")
+local root = char:FindFirstChild("HumanoidRootPart")
+
+if fly and root then
+root.Velocity = Vector3.new(0,flySpeed,0)
+end
+
+if godmode and hum then
+hum.Health = hum.MaxHealth
+end
 
 end)
 
-workspace.DescendantAdded:Connect(function(v)
-	if instantEnabled and v:IsA("ProximityPrompt") then
-		v.HoldDuration = 0
-	end
-end)
-
--------------------------------------------------
 -- INFINITE JUMP
--------------------------------------------------
+UIS.JumpRequest:Connect(function()
 
-local InfiniteJump = false
+if infiniteJump then
+local char = player.Character
+if char and char:FindFirstChildOfClass("Humanoid") then
+char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+end
+end
 
-createToggle("Infinite Jump", function(state)
-	InfiniteJump = state
 end)
 
-UserInputService.JumpRequest:Connect(function()
+-- INTERACT
+RunService.RenderStepped:Connect(function()
 
-	if InfiniteJump then
-
-		local char = player.Character
-
-		if char and char:FindFirstChildOfClass("Humanoid") then
-			char:FindFirstChildOfClass("Humanoid")
-			:ChangeState(Enum.HumanoidStateType.Jumping)
-		end
-
-	end
+if instantInteract then
+for _,v in pairs(workspace:GetDescendants()) do
+if v:IsA("ProximityPrompt") then
+fireproximityprompt(v)
+end
+end
+end
 
 end)
