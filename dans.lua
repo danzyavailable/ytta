@@ -135,21 +135,18 @@ workspace.DescendantAdded:Connect(function(v)
 	end
 end)
 
--- INFINITY JUMP
-local infiniteJumpEnabled = false
+-- INFINITE JUMP
+local InfiniteJump = false
 
-createToggle("Infinity Jump", function(state)
-	infiniteJumpEnabled = state
+createToggle("Infinite Jump", function(state)
+	InfiniteJump = state
 end)
 
 UserInputService.JumpRequest:Connect(function()
-	if infiniteJumpEnabled then
-		local character = player.Character
-		if character then
-			local humanoid = character:FindFirstChildOfClass("Humanoid")
-			if humanoid then
-				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-			end
+	if InfiniteJump then
+		local char = player.Character
+		if char and char:FindFirstChildOfClass("Humanoid") then
+			char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
 		end
 	end
 end)
