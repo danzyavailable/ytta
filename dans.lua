@@ -120,7 +120,7 @@ end
 -- INSTANT INTERACT
 local instantEnabled = false
 
-createToggle("Instant Interact", function(state)
+createToggle("Instant Take", function(state)
 	instantEnabled = state
 	for _, v in pairs(workspace:GetDescendants()) do
 		if v:IsA("ProximityPrompt") then
