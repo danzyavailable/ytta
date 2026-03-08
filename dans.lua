@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 
@@ -12,18 +13,54 @@ local godmode = false
 local instantInteract = false
 local infiniteJump = false
 
-local autoDivine = false
-local autoCelestial = false
-local autoSecret = false
-
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "DanHub"
 gui.ResetOnSpawn = false
 gui.Parent = game.CoreGui
 
+-- ANIMATION TEXT
+local intro = Instance.new("TextLabel")
+intro.Size = UDim2.new(0,400,0,80)
+intro.Position = UDim2.new(0.5,-200,0.4,0)
+intro.BackgroundTransparency = 1
+intro.Text = "dansskiee"
+intro.TextScaled = true
+intro.Font = Enum.Font.GothamBlack
+intro.TextColor3 = Color3.fromRGB(255,255,255)
+intro.TextTransparency = 1
+intro.Parent = gui
+
+local tweenIn = TweenService:Create(
+intro,
+TweenInfo.new(1.5,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),
+{
+TextTransparency = 0,
+Position = UDim2.new(0.5,-200,0.35,0)
+}
+)
+
+local tweenOut = TweenService:Create(
+intro,
+TweenInfo.new(1.5,Enum.EasingStyle.Quart,Enum.EasingDirection.In),
+{
+TextTransparency = 1,
+Position = UDim2.new(0.5,-200,0.25,0)
+}
+)
+
+tweenIn:Play()
+tweenIn.Completed:Wait()
+task.wait(1.5)
+tweenOut:Play()
+
+task.delay(3,function()
+intro:Destroy()
+end)
+
+-- MAIN FRAME
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,300,0,320) -- diperlebar
+frame.Size = UDim2.new(0,300,0,260)
 frame.Position = UDim2.new(0,100,0,100)
 frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 frame.BorderSizePixel = 0
@@ -45,12 +82,11 @@ container.BackgroundTransparency = 1
 container.Parent = frame
 
 local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,5)
+layout.Padding = UDim.new(0,6)
 layout.Parent = container
 
--- DRAG
+-- DRAG SYSTEM
 local dragging = false
-local dragInput
 local dragStart
 local startPos
 
@@ -80,7 +116,7 @@ startPos.Y.Offset + delta.Y
 end
 end)
 
--- BUTTON CREATOR
+-- TOGGLE CREATOR
 local function createToggle(text,callback)
 
 local btn = Instance.new("TextButton")
@@ -104,7 +140,6 @@ end)
 end
 
 -- FEATURES
-
 createToggle("Fly",function(v)
 fly = v
 end)
@@ -121,19 +156,7 @@ createToggle("Infinite Jump",function(v)
 infiniteJump = v
 end)
 
-createToggle("Auto Divine",function(v)
-autoDivine = v
-end)
-
-createToggle("Auto Celestial",function(v)
-autoCelestial = v
-end)
-
-createToggle("Auto Secret",function(v)
-autoSecret = v
-end)
-
--- FLY SYSTEM
+-- FLY + GODMODE
 RunService.RenderStepped:Connect(function()
 
 local char = player.Character
@@ -164,33 +187,15 @@ end
 
 end)
 
--- INTERACT / AUTO LOOT
+-- INSTANT INTERACT
 RunService.RenderStepped:Connect(function()
 
-for _,v in pairs(workspace:GetDescendants()) do
-
-if v:IsA("ProximityPrompt") then
-
 if instantInteract then
+for _,v in pairs(workspace:GetDescendants()) do
+if v:IsA("ProximityPrompt") then
 fireproximityprompt(v)
 end
-
-local name = string.lower(v.Parent.Name)
-
-if autoDivine and string.find(name,"divine") then
-fireproximityprompt(v)
 end
-
-if autoCelestial and string.find(name,"celestial") then
-fireproximityprompt(v)
-end
-
-if autoSecret and string.find(name,"secret") then
-fireproximityprompt(v)
-end
-
-end
-
 end
 
 end)
