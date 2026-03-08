@@ -34,32 +34,32 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
 Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 15)
 
--- SMOOTH DRAG SYSTEM
+-- DRAG SYSTEM
 local dragging, dragInput, dragStart, startPos
 local function update(input)
-    local delta = input.Position - dragStart
-    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	local delta = input.Position - dragStart
+	MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
 Title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
-    end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
 end)
 
 Title.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then update(input) end
+	if input == dragInput and dragging then update(input) end
 end)
 
 MinimizeBtn.Parent = MainFrame
@@ -73,11 +73,11 @@ MinimizeBtn.TextSize = 18
 
 local minimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    MainFrame:TweenSize(minimized and UDim2.new(0, 250, 0, 45) or UDim2.new(0, 250, 0, 240), "Out", "Quart", 0.3, true)
-    Container.Visible = not minimized
-    Footer.Visible = not minimized
-    MinimizeBtn.Text = minimized and "▲" or "▼"
+	minimized = not minimized
+	MainFrame:TweenSize(minimized and UDim2.new(0, 250, 0, 45) or UDim2.new(0, 250, 0, 240), "Out", "Quart", 0.3, true)
+	Container.Visible = not minimized
+	Footer.Visible = not minimized
+	MinimizeBtn.Text = minimized and "▲" or "▼"
 end)
 
 Footer.Parent = MainFrame
@@ -97,30 +97,40 @@ Container.BackgroundTransparency = 1
 UIListLayout.Parent = Container
 UIListLayout.Padding = UDim.new(0, 8)
 
+-- TOGGLE HELPER
 local function createToggle(txt, callback)
-    local btn = Instance.new("TextButton", Container)
-    btn.Size = UDim2.new(1, 0, 0, 35)
-    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    btn.Text = txt .. ": OFF"
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    
-    local enabled = false
-    btn.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        btn.Text = txt .. (enabled and ": ON" or ": OFF")
-        btn.BackgroundColor3 = enabled and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(30, 30, 30)
-        callback(enabled)
-    end)
+	local btn = Instance.new("TextButton", Container)
+	btn.Size = UDim2.new(1, 0, 0, 35)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	btn.Text = txt .. ": OFF"
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+	local enabled = false
+	btn.MouseButton1Click:Connect(function()
+		enabled = not enabled
+		btn.Text = txt .. (enabled and ": ON" or ": OFF")
+		btn.BackgroundColor3 = enabled and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(30, 30, 30)
+		callback(enabled)
+	end)
 end
 
--- Instant Interact
+-- INSTANT INTERACT
+local instantEnabled = false
+
 createToggle("Instant Interact", function(state)
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("ProximityPrompt") then
-            v.HoldDuration = state and 0 or 1
-        end
-    end
+	instantEnabled = state
+	for _, v in pairs(workspace:GetDescendants()) do
+		if v:IsA("ProximityPrompt") then
+			v.HoldDuration = state and 0 or 1
+		end
+	end
+end)
+
+workspace.DescendantAdded:Connect(function(v)
+	if instantEnabled and v:IsA("ProximityPrompt") then
+		v.HoldDuration = 0
+	end
 end)
