@@ -117,10 +117,10 @@ local function createToggle(txt, callback)
 	end)
 end
 
--- INSTANT INTERACT
+-- Instant Interact
 local instantEnabled = false
 
-createToggle("Instant Take", function(state)
+createToggle("Instant Interact", function(state)
 	instantEnabled = state
 	for _, v in pairs(workspace:GetDescendants()) do
 		if v:IsA("ProximityPrompt") then
@@ -132,5 +132,58 @@ end)
 workspace.DescendantAdded:Connect(function(v)
 	if instantEnabled and v:IsA("ProximityPrompt") then
 		v.HoldDuration = 0
+	end
+end)
+
+-- Infinite Jump
+local InfiniteJump = false
+
+createToggle("Infinite Jump", function(state)
+	InfiniteJump = state
+end)
+
+UserInputService.JumpRequest:Connect(function()
+	if InfiniteJump then
+		local char = player.Character
+		if char and char:FindFirstChildOfClass("Humanoid") then
+			char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+		end
+	end
+end)
+
+-- Auto Divine / Celestial / Secret
+local autoDivine = false
+local autoCelestial = false
+local autoSecret = false
+
+createToggle("Auto Divine", function(v)
+	autoDivine = v
+end)
+
+createToggle("Auto Celestial", function(v)
+	autoCelestial = v
+end)
+
+createToggle("Auto Secret", function(v)
+	autoSecret = v
+end)
+
+RunService.RenderStepped:Connect(function()
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("ProximityPrompt") then
+			local name = string.lower(v.Parent.Name)
+
+			if autoDivine and string.find(name,"divine") then
+				fireproximityprompt(v)
+			end
+
+			if autoCelestial and string.find(name,"celestial") then
+				fireproximityprompt(v)
+			end
+
+			if autoSecret and string.find(name,"secret") then
+				fireproximityprompt(v)
+			end
+		end
 	end
 end)
