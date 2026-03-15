@@ -150,38 +150,3 @@ UserInputService.JumpRequest:Connect(function()
 		end
 	end
 end)
-
--- EVENT TIME DISPLAY
-local EventTimeLabel = Instance.new("TextLabel")
-EventTimeLabel.Parent = Container
-EventTimeLabel.Size = UDim2.new(1, 0, 0, 35)
-EventTimeLabel.BackgroundColor3 = Color3.fromRGB(30,30,30)
-EventTimeLabel.TextColor3 = Color3.fromRGB(255,255,255)
-EventTimeLabel.Font = Enum.Font.GothamBold
-EventTimeLabel.TextSize = 14
-EventTimeLabel.Text = "Event Time: Detecting..."
-Instance.new("UICorner", EventTimeLabel).CornerRadius = UDim.new(0,8)
-
--- AUTO DETECT EVENT TIMER
-RunService.RenderStepped:Connect(function()
-	local found = false
-	
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("TextLabel") or v:IsA("TextButton") then
-			
-			local txt = string.lower(v.Text)
-			
-			if string.find(txt,"tsunami") or string.find(txt,"next") or string.find(txt,"event") then
-				EventTimeLabel.Text = "Event Time: "..v.Text
-				found = true
-				break
-			end
-			
-		end
-	end
-	
-	if not found then
-		EventTimeLabel.Text = "Event Time: Not Found"
-	end
-	
-end)
