@@ -150,3 +150,23 @@ UserInputService.JumpRequest:Connect(function()
 		end
 	end
 end)
+
+-- NOCLIP
+local Noclip = false
+
+createToggle("Noclip", function(state)
+	Noclip = state
+end)
+
+RunService.Stepped:Connect(function()
+	if Noclip then
+		local char = player.Character
+		if char then
+			for _, part in pairs(char:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end
+	end
+end)
