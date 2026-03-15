@@ -84,7 +84,7 @@ Footer.Parent = MainFrame
 Footer.Size = UDim2.new(1, 0, 0, 25)
 Footer.Position = UDim2.new(0, 0, 1, -25)
 Footer.BackgroundTransparency = 1
-Footer.Text = "Escape Tsunami For Brainrots"
+Footer.Text = "Tiktok = @dansskiee2"
 Footer.TextColor3 = Color3.fromRGB(200, 200, 200)
 Footer.Font = Enum.Font.GothamBold
 Footer.TextSize = 11
