@@ -151,10 +151,13 @@ UserInputService.JumpRequest:Connect(function()
 	end
 end)
 
--- NOCLIP
+-- =========================
+-- STRONG NOCLIP (TEMBUS BASE LOCK)
+-- =========================
+
 local Noclip = false
 
-createToggle("Noclip", function(state)
+createToggle("Strong Noclip", function(state)
 	Noclip = state
 end)
 
@@ -162,9 +165,39 @@ RunService.Stepped:Connect(function()
 	if Noclip then
 		local char = player.Character
 		if char then
-			for _, part in pairs(char:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = false
+			for _,v in pairs(char:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
+				end
+			end
+			
+			local root = char:FindFirstChild("HumanoidRootPart")
+			if root then
+				root.Velocity = Vector3.new(0,0,0)
+			end
+		end
+	end
+end)
+
+-- =========================
+-- INSTANT TAKE BRAINROT
+-- =========================
+
+local InstantTake = false
+
+createToggle("Instant Take Brainrot", function(state)
+	InstantTake = state
+end)
+
+RunService.RenderStepped:Connect(function()
+	if InstantTake then
+		for _,v in pairs(workspace:GetDescendants()) do
+			if v:IsA("ProximityPrompt") then
+				if string.find(string.lower(v.ActionText),"take")
+				or string.find(string.lower(v.ObjectText),"brainrot") then
+					
+					v.HoldDuration = 0
+					fireproximityprompt(v)
 				end
 			end
 		end
