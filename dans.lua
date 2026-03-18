@@ -170,3 +170,51 @@ RunService.Stepped:Connect(function()
 		end
 	end
 end)
+
+-- =========================
+-- FPS & PING MONITOR
+-- =========================
+
+local Stats = game:GetService("Stats")
+
+local FPSPingFrame = Instance.new("Frame")
+local FPSLabel = Instance.new("TextLabel")
+
+FPSPingFrame.Size = UDim2.new(0,120,0,40)
+FPSPingFrame.Position = UDim2.new(1,-140,0,20)
+FPSPingFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+FPSPingFrame.Visible = false
+FPSPingFrame.Parent = ScreenGui
+FPSPingFrame.Active = true
+FPSPingFrame.Draggable = true
+
+Instance.new("UICorner", FPSPingFrame).CornerRadius = UDim.new(0,10)
+
+FPSLabel.Parent = FPSPingFrame
+FPSLabel.Size = UDim2.new(1,0,1,0)
+FPSLabel.BackgroundTransparency = 1
+FPSLabel.TextColor3 = Color3.fromRGB(255,255,255)
+FPSLabel.Font = Enum.Font.GothamBold
+FPSLabel.TextSize = 14
+FPSLabel.Text = "FPS: 0 | Ping: 0"
+
+local last = tick()
+local frames = 0
+
+RunService.RenderStepped:Connect(function()
+	frames += 1
+	if tick() - last >= 1 then
+		local fps = frames
+		frames = 0
+		last = tick()
+
+		local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+
+		FPSLabel.Text = "FPS: "..fps.." | Ping: "..ping.." ms"
+	end
+end)
+
+-- TOGGLE
+createToggle("FPS & Ping", function(state)
+	FPSPingFrame.Visible = state
+end)
