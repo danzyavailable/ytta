@@ -387,179 +387,82 @@ createToggle("Change Server Menu",function(state)
 end)
 
 -- =========================
--- FLY FEATURE (MOBILE)
+-- FLY FEATURE
 -- =========================
 
-local Fly = false
-local flySpeed = 50
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
-local flyGui = Instance.new("Frame")
-local flyTitle = Instance.new("TextLabel")
-local speedText = Instance.new("TextLabel")
-local speedInput = Instance.new("TextBox")
-local plusBtn = Instance.new("TextButton")
-local minusBtn = Instance.new("TextButton")
+local player = Players.LocalPlayer
 
-flyGui.Parent = ScreenGui
-flyGui.Size = UDim2.new(0,180,0,120)
-flyGui.Position = UDim2.new(0.7,0,0.5,0)
-flyGui.BackgroundColor3 = Color3.fromRGB(20,20,20)
-flyGui.Visible = false
-flyGui.Active = true
+local flying = false
+local speed = 50
 
-setupDragging(flyGui)
+local bg
+local bv
 
-local flyCorner = Instance.new("UICorner")
-flyCorner.CornerRadius = UDim.new(0,10)
-flyCorner.Parent = flyGui
-
--- Title
-flyTitle.Parent = flyGui
-flyTitle.Size = UDim2.new(1,0,0,25)
-flyTitle.BackgroundTransparency = 1
-flyTitle.Text = "Fly Control"
-flyTitle.Font = Enum.Font.GothamBold
-flyTitle.TextColor3 = Color3.fromRGB(255,255,255)
-flyTitle.TextSize = 14
-
--- Speed Text
-speedText.Parent = flyGui
-speedText.Size = UDim2.new(1,0,0,25)
-speedText.Position = UDim2.new(0,0,0.25,0)
-speedText.BackgroundTransparency = 1
-speedText.Text = "Speed : "..flySpeed
-speedText.Font = Enum.Font.GothamBold
-speedText.TextColor3 = Color3.fromRGB(255,255,255)
-speedText.TextSize = 14
-
--- Input Speed
-speedInput.Parent = flyGui
-speedInput.Size = UDim2.new(0.9,0,0,25)
-speedInput.Position = UDim2.new(0.05,0,0.5,0)
-speedInput.BackgroundColor3 = Color3.fromRGB(35,35,35)
-speedInput.PlaceholderText = "Input Speed"
-speedInput.Text = ""
-speedInput.Font = Enum.Font.GothamBold
-speedInput.TextColor3 = Color3.fromRGB(255,255,255)
-speedInput.TextSize = 14
-speedInput.ClearTextOnFocus = false
-
-local inputCorner = Instance.new("UICorner")
-inputCorner.CornerRadius = UDim.new(0,8)
-inputCorner.Parent = speedInput
-
--- Minus Button
-minusBtn.Parent = flyGui
-minusBtn.Size = UDim2.new(0.4,0,0,30)
-minusBtn.Position = UDim2.new(0.05,0,0.75,0)
-minusBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-minusBtn.Text = "-"
-minusBtn.Font = Enum.Font.GothamBold
-minusBtn.TextColor3 = Color3.fromRGB(255,255,255)
-minusBtn.TextSize = 18
-
-local minusCorner = Instance.new("UICorner")
-minusCorner.CornerRadius = UDim.new(0,8)
-minusCorner.Parent = minusBtn
-
--- Plus Button
-plusBtn.Parent = flyGui
-plusBtn.Size = UDim2.new(0.4,0,0,30)
-plusBtn.Position = UDim2.new(0.55,0,0.75,0)
-plusBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-plusBtn.Text = "+"
-plusBtn.Font = Enum.Font.GothamBold
-plusBtn.TextColor3 = Color3.fromRGB(255,255,255)
-plusBtn.TextSize = 18
-
-local plusCorner = Instance.new("UICorner")
-plusCorner.CornerRadius = UDim.new(0,8)
-plusCorner.Parent = plusBtn
-
--- Update Speed Function
-local function updateSpeed()
-	speedText.Text = "Speed : "..flySpeed
-end
-
--- + Speed
-plusBtn.MouseButton1Click:Connect(function()
-	flySpeed += 10
-	updateSpeed()
-end)
-
--- - Speed
-minusBtn.MouseButton1Click:Connect(function()
-	flySpeed = math.max(10, flySpeed - 10)
-	updateSpeed()
-end)
-
--- Input Speed
-speedInput.FocusLost:Connect(function()
-
-	local number = tonumber(speedInput.Text)
-
-	if number then
-		flySpeed = math.clamp(number,10,500)
-		updateSpeed()
-	end
-
-end)
-
--- Fly physics
-local bodyVelocity
-local bodyGyro
-
-RunService.RenderStepped:Connect(function()
-
-	if Fly then
-
-		local char = player.Character
-		if not char then return end
-
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		if not hrp then return end
-
-		local cam = workspace.CurrentCamera
-		local moveDir = char:FindFirstChildOfClass("Humanoid").MoveDirection
-
-		if bodyVelocity then
-			bodyVelocity.Velocity =
-				(cam.CFrame.LookVector * moveDir.Z +
-				cam.CFrame.RightVector * moveDir.X) * flySpeed
-		end
-
-	end
-
-end)
-
--- Toggle Fly
-createToggle("Fly",function(state)
-
-	Fly = state
-	flyGui.Visible = state
+local function startFly()
 
 	local char = player.Character
 	if not char then return end
+	
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not hum or not root then return end
 
-	local hrp = char:FindFirstChild("HumanoidRootPart")
+	flying = true
+	hum.PlatformStand = true
+
+	bg = Instance.new("BodyGyro")
+	bg.P = 9e4
+	bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
+	bg.CFrame = root.CFrame
+	bg.Parent = root
+
+	bv = Instance.new("BodyVelocity")
+	bv.Velocity = Vector3.new(0,0,0)
+	bv.MaxForce = Vector3.new(9e9,9e9,9e9)
+	bv.Parent = root
+
+	RunService.RenderStepped:Connect(function()
+
+		if not flying then return end
+		
+		local cam = workspace.CurrentCamera
+		
+		local move = hum.MoveDirection
+		
+		bv.Velocity = cam.CFrame:VectorToWorldSpace(move) * speed
+		bg.CFrame = cam.CFrame
+
+	end)
+
+end
+
+local function stopFly()
+
+	local char = player.Character
+	if not char then return end
+	
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.PlatformStand = false
+	end
+	
+	flying = false
+	
+	if bg then bg:Destroy() end
+	if bv then bv:Destroy() end
+
+end
+
+-- toggle function
+local function toggleFly(state)
 
 	if state then
-
-		bodyVelocity = Instance.new("BodyVelocity")
-		bodyVelocity.MaxForce = Vector3.new(999999,999999,999999)
-		bodyVelocity.Velocity = Vector3.new(0,0,0)
-		bodyVelocity.Parent = hrp
-
-		bodyGyro = Instance.new("BodyGyro")
-		bodyGyro.MaxTorque = Vector3.new(999999,999999,999999)
-		bodyGyro.CFrame = workspace.CurrentCamera.CFrame
-		bodyGyro.Parent = hrp
-
+		startFly()
 	else
-
-		if bodyVelocity then bodyVelocity:Destroy() end
-		if bodyGyro then bodyGyro:Destroy() end
-
+		stopFly()
 	end
 
-end)
+end
