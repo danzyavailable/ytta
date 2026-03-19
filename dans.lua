@@ -13,15 +13,19 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local workspace = game:GetService("Workspace")
-local player = Players.LocalPlayer
+local TeleportService = game:GetService("TeleportService")
+local Stats = game:GetService("Stats")
 
--- Hapus GUI lama jika ada (Biar tidak tumpuk saat re-execute)
-local oldGui = game.CoreGui:FindFirstChild("DansskieeGui")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui") -- Pindah ke PlayerGui
+
+-- Hapus GUI lama jika ada
+local oldGui = playerGui:FindFirstChild("DansskieeGui")
 if oldGui then oldGui:Destroy() end
 ScreenGui.Name = "DansskieeGui"
-ScreenGui.Parent = game.CoreGui
--- Tambahkan ZIndex agar GUI berada di atas elemen lain
+ScreenGui.Parent = playerGui -- Parent ke PlayerGui bukan CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true -- Agar tidak terpengaruh notch/batas layar
 
 -- Main Frame Setup
 MainFrame.Parent = ScreenGui
@@ -181,8 +185,6 @@ end)
 -- FPS & PING MONITOR
 -- =========================
 
-local Stats = game:GetService("Stats")
-
 local fpsGui = Instance.new("Frame")
 local fpsText = Instance.new("TextLabel")
 
@@ -192,35 +194,41 @@ fpsGui.Position = UDim2.new(1,-170,0,10)
 fpsGui.BackgroundColor3 = Color3.fromRGB(20,20,20)
 fpsGui.Visible = false
 fpsGui.ZIndex = 20
--- Implementasi dragging manual agar lebih handal
 fpsGui.Active = true
-local isDraggingFps = false
-local dragStartPos = Vector2.new()
-local guiStartPos = UDim2.new()
+fpsGui.Selectable = true -- Tambahkan Selectable
 
-fpsGui.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDraggingFps = true
-        dragStartPos = input.Position
-        guiStartPos = fpsGui.Position
-    end
-end)
+-- Sistem dragging manual dengan deteksi area klik
+local function setupDragging(gui)
+    local isDragging = false
+    local startPos = Vector2.new()
+    local guiPos = UDim2.new()
 
-UserInputService.InputChanged:Connect(function(input)
-    if isDraggingFps and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStartPos
-        fpsGui.Position = UDim2.new(
-            guiStartPos.X.Scale, guiStartPos.X.Offset + delta.X,
-            guiStartPos.Y.Scale, guiStartPos.Y.Offset + delta.Y
-        )
-    end
-end)
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            startPos = input.Position
+            guiPos = gui.Position
+            -- Blokir input agar tidak menyentuh elemen lain saat drag
+            input:GetPropertyChangedSignal("UserInputState"):Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    isDragging = false
+                end
+            end)
+        end
+    end)
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDraggingFps = false
-    end
-end)
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - startPos
+            gui.Position = UDim2.new(
+                0, guiPos.X.Offset + delta.X,
+                0, guiPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+setupDragging(fpsGui)
 
 local fpsCorner = Instance.new("UICorner")
 fpsCorner.CornerRadius = UDim.new(0,10)
@@ -263,8 +271,6 @@ end)
 -- CHANGE SERVER FEATURE
 -- =========================
 
-local TeleportService = game:GetService("TeleportService")
-
 local serverFrame = Instance.new("Frame")
 local serverBtn = Instance.new("TextButton")
 local serverTitle = Instance.new("TextLabel")
@@ -275,35 +281,10 @@ serverFrame.Position = UDim2.new(0.8,0,0.3,0)
 serverFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 serverFrame.Visible = false
 serverFrame.ZIndex = 20
--- Implementasi dragging manual juga untuk server frame
 serverFrame.Active = true
-local isDraggingServer = false
-local dragStartServer = Vector2.new()
-local guiStartServer = UDim2.new()
+serverFrame.Selectable = true
 
-serverFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDraggingServer = true
-        dragStartServer = input.Position
-        guiStartServer = serverFrame.Position
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if isDraggingServer and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStartServer
-        serverFrame.Position = UDim2.new(
-            guiStartServer.X.Scale, guiStartServer.X.Offset + delta.X,
-            guiStartServer.Y.Scale, guiStartServer.Y.Offset + delta.Y
-        )
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        isDraggingServer = false
-    end
-end)
+setupDragging(serverFrame) -- Gunakan fungsi dragging yang sama
 
 local serverCorner = Instance.new("UICorner")
 serverCorner.CornerRadius = UDim.new(0,10)
