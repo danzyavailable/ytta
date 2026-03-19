@@ -20,6 +20,8 @@ local oldGui = game.CoreGui:FindFirstChild("DansskieeGui")
 if oldGui then oldGui:Destroy() end
 ScreenGui.Name = "DansskieeGui"
 ScreenGui.Parent = game.CoreGui
+-- Tambahkan ZIndex agar GUI berada di atas elemen lain
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Main Frame Setup
 MainFrame.Parent = ScreenGui
@@ -27,7 +29,8 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 MainFrame.Position = UDim2.new(0.1, 0, 0.4, 0)
 MainFrame.Size = UDim2.new(0, 250, 0, 240)
 MainFrame.Active = true
-MainFrame.Draggable = true -- Simple dragging
+MainFrame.Draggable = true
+MainFrame.ZIndex = 10
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
@@ -41,6 +44,7 @@ Title.Text = "Script By Dansskiee"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
+Title.ZIndex = 11
 
 local TitleCorner = Instance.new("UICorner")
 TitleCorner.CornerRadius = UDim.new(0, 15)
@@ -55,6 +59,7 @@ MinimizeBtn.Text = "▼"
 MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeBtn.Font = Enum.Font.GothamBold
 MinimizeBtn.TextSize = 18
+MinimizeBtn.ZIndex = 12
 
 local minimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
@@ -68,13 +73,14 @@ end)
 -- Scrolling Container Setup
 Container.Parent = MainFrame
 Container.Position = UDim2.new(0, 10, 0, 55)
-Container.Size = UDim2.new(1, -20, 0, 150) -- Ukuran area scroll
+Container.Size = UDim2.new(1, -20, 0, 150)
 Container.BackgroundTransparency = 1
 Container.BorderSizePixel = 0
-Container.CanvasSize = UDim2.new(0, 0, 0, 0) -- Otomatis memanjang
+Container.CanvasSize = UDim2.new(0, 0, 0, 0)
 Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Container.ScrollBarThickness = 4
 Container.ScrollingDirection = Enum.ScrollingDirection.Y
+Container.ZIndex = 11
 
 UIListLayout.Parent = Container
 UIListLayout.Padding = UDim.new(0, 8)
@@ -89,17 +95,19 @@ Footer.Text = "Tiktok = @dansskiee2"
 Footer.TextColor3 = Color3.fromRGB(200, 200, 200)
 Footer.Font = Enum.Font.GothamBold
 Footer.TextSize = 11
+Footer.ZIndex = 11
 
 -- Fungsi Create Toggle
 local function createToggle(txt, callback)
     local btn = Instance.new("TextButton")
     btn.Parent = Container
-    btn.Size = UDim2.new(1, -10, 0, 35) -- Kasih gap dikit buat scrollbar
+    btn.Size = UDim2.new(1, -10, 0, 35)
     btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     btn.Text = txt .. ": OFF"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 13
+    btn.ZIndex = 12
 
     local ToggleCorner = Instance.new("UICorner")
     ToggleCorner.CornerRadius = UDim.new(0, 8)
@@ -183,7 +191,36 @@ fpsGui.Size = UDim2.new(0,150,0,40)
 fpsGui.Position = UDim2.new(1,-170,0,10)
 fpsGui.BackgroundColor3 = Color3.fromRGB(20,20,20)
 fpsGui.Visible = false
-fpsGui.Draggable = true
+fpsGui.ZIndex = 20
+-- Implementasi dragging manual agar lebih handal
+fpsGui.Active = true
+local isDraggingFps = false
+local dragStartPos = Vector2.new()
+local guiStartPos = UDim2.new()
+
+fpsGui.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDraggingFps = true
+        dragStartPos = input.Position
+        guiStartPos = fpsGui.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if isDraggingFps and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStartPos
+        fpsGui.Position = UDim2.new(
+            guiStartPos.X.Scale, guiStartPos.X.Offset + delta.X,
+            guiStartPos.Y.Scale, guiStartPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDraggingFps = false
+    end
+end)
 
 local fpsCorner = Instance.new("UICorner")
 fpsCorner.CornerRadius = UDim.new(0,10)
@@ -196,6 +233,7 @@ fpsText.Font = Enum.Font.GothamBold
 fpsText.TextColor3 = Color3.fromRGB(255,255,255)
 fpsText.TextSize = 14
 fpsText.Text = "FPS: 0 | Ping: 0"
+fpsText.ZIndex = 21
 
 local frames = 0
 local lastTime = tick()
@@ -236,7 +274,36 @@ serverFrame.Size = UDim2.new(0,180,0,80)
 serverFrame.Position = UDim2.new(0.8,0,0.3,0)
 serverFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 serverFrame.Visible = false
-serverFrame.Draggable = true
+serverFrame.ZIndex = 20
+-- Implementasi dragging manual juga untuk server frame
+serverFrame.Active = true
+local isDraggingServer = false
+local dragStartServer = Vector2.new()
+local guiStartServer = UDim2.new()
+
+serverFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDraggingServer = true
+        dragStartServer = input.Position
+        guiStartServer = serverFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if isDraggingServer and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStartServer
+        serverFrame.Position = UDim2.new(
+            guiStartServer.X.Scale, guiStartServer.X.Offset + delta.X,
+            guiStartServer.Y.Scale, guiStartServer.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDraggingServer = false
+    end
+end)
 
 local serverCorner = Instance.new("UICorner")
 serverCorner.CornerRadius = UDim.new(0,10)
@@ -249,6 +316,7 @@ serverTitle.Text = "Server Menu"
 serverTitle.Font = Enum.Font.GothamBold
 serverTitle.TextColor3 = Color3.fromRGB(255,255,255)
 serverTitle.TextSize = 14
+serverTitle.ZIndex = 21
 
 serverBtn.Parent = serverFrame
 serverBtn.Size = UDim2.new(0.9,0,0,35)
@@ -258,6 +326,7 @@ serverBtn.Text = "Change Server"
 serverBtn.Font = Enum.Font.GothamBold
 serverBtn.TextColor3 = Color3.fromRGB(255,255,255)
 serverBtn.TextSize = 14
+serverBtn.ZIndex = 21
 
 local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(0,8)
