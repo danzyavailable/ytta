@@ -25,6 +25,7 @@ if oldGui then oldGui:Destroy() end
 ScreenGui.Name = "DansskieeGui"
 ScreenGui.Parent = playerGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.DisplayOrder = 999
 ScreenGui.IgnoreGuiInset = true
 
 -- MAIN FRAME
