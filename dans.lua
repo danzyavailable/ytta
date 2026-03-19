@@ -1,236 +1,176 @@
-local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local MinimizeBtn = Instance.new("TextButton")
-local Footer = Instance.new("TextLabel")
-
-local Container = Instance.new("ScrollingFrame")
-local UIListLayout = Instance.new("UIListLayout")
-
--- Services
+-- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local workspace = game:GetService("Workspace")
 local TeleportService = game:GetService("TeleportService")
 local Stats = game:GetService("Stats")
+local workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- delete old gui
-local oldGui = playerGui:FindFirstChild("DansskieeGui")
-if oldGui then oldGui:Destroy() end
+-- DELETE OLD GUI
+local old = playerGui:FindFirstChild("DansskieeGui")
+if old then old:Destroy() end
 
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DansskieeGui"
 ScreenGui.Parent = playerGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.DisplayOrder = 999
 ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 999
 
--- MAIN FRAME
+local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(18,18,18)
-MainFrame.Position = UDim2.new(0.1,0,0.4,0)
+MainFrame.Position = UDim2.new(0.02,0,0.45,0)
 MainFrame.Size = UDim2.new(0,250,0,240)
 MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.ZIndex = 10
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0,15)
-MainCorner.Parent = MainFrame
+local corner = Instance.new("UICorner",MainFrame)
+corner.CornerRadius = UDim.new(0,15)
 
 -- TITLE
+local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1,0,0,45)
 Title.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Title.Text = "Script By Dansskiee"
-Title.TextColor3 = Color3.fromRGB(255,255,255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
-Title.ZIndex = 11
+Title.TextColor3 = Color3.fromRGB(255,255,255)
 
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0,15)
-TitleCorner.Parent = Title
+local titleCorner = Instance.new("UICorner",Title)
+titleCorner.CornerRadius = UDim.new(0,15)
 
 -- MINIMIZE
+local MinimizeBtn = Instance.new("TextButton")
 MinimizeBtn.Parent = MainFrame
 MinimizeBtn.Size = UDim2.new(0,30,0,30)
 MinimizeBtn.Position = UDim2.new(1,-35,0,7)
 MinimizeBtn.BackgroundTransparency = 1
 MinimizeBtn.Text = "▼"
-MinimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 MinimizeBtn.Font = Enum.Font.GothamBold
 MinimizeBtn.TextSize = 18
-MinimizeBtn.ZIndex = 12
-
-local minimized = false
-
-MinimizeBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	
-	MainFrame:TweenSize(
-		minimized and UDim2.new(0,250,0,45) or UDim2.new(0,250,0,240),
-		"Out","Quart",0.3,true
-	)
-	
-	Container.Visible = not minimized
-	Footer.Visible = not minimized
-	
-	MinimizeBtn.Text = minimized and "▲" or "▼"
-end)
+MinimizeBtn.TextColor3 = Color3.new(1,1,1)
 
 -- CONTAINER
+local Container = Instance.new("ScrollingFrame")
 Container.Parent = MainFrame
 Container.Position = UDim2.new(0,10,0,55)
 Container.Size = UDim2.new(1,-20,0,150)
 Container.BackgroundTransparency = 1
-Container.BorderSizePixel = 0
-Container.CanvasSize = UDim2.new(0,0,0,0)
-Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Container.ScrollBarThickness = 4
-Container.ScrollingDirection = Enum.ScrollingDirection.Y
-Container.ZIndex = 11
+Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
-UIListLayout.Parent = Container
+local UIListLayout = Instance.new("UIListLayout",Container)
 UIListLayout.Padding = UDim.new(0,8)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
 -- FOOTER
+local Footer = Instance.new("TextLabel")
 Footer.Parent = MainFrame
 Footer.Size = UDim2.new(1,0,0,25)
 Footer.Position = UDim2.new(0,0,1,-25)
 Footer.BackgroundTransparency = 1
 Footer.Text = "Tiktok = @dansskiee2"
-Footer.TextColor3 = Color3.fromRGB(200,200,200)
 Footer.Font = Enum.Font.GothamBold
 Footer.TextSize = 11
-Footer.ZIndex = 11
+Footer.TextColor3 = Color3.fromRGB(200,200,200)
 
--- TOGGLE FUNCTION
-local function createToggle(txt,callback)
+-- MINIMIZE SYSTEM
+local minimized = false
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+
+	minimized = not minimized
+
+	MainFrame:TweenSize(
+		minimized and UDim2.new(0,250,0,45) or UDim2.new(0,250,0,240),
+		"Out","Quart",0.3,true
+	)
+
+	Container.Visible = not minimized
+	Footer.Visible = not minimized
+
+	MinimizeBtn.Text = minimized and "▲" or "▼"
+
+end)
+
+-- DRAG SYSTEM
+local dragging
+local dragStart
+local startPos
+
+Title.InputBegan:Connect(function(input)
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+
+	end
+
+end)
+
+Title.InputEnded:Connect(function(input)
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+	if dragging then
+
+		local delta = input.Position - dragStart
+
+		MainFrame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+
+	end
+
+end)
+
+-- TOGGLE CREATOR
+local function createToggle(name,callback)
 
 	local btn = Instance.new("TextButton")
 	btn.Parent = Container
 	btn.Size = UDim2.new(1,-10,0,35)
 	btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-	btn.Text = txt.." : OFF"
-	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Text = name.." : OFF"
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 13
+	btn.TextColor3 = Color3.new(1,1,1)
 
-	local corner = Instance.new("UICorner")
+	local corner = Instance.new("UICorner",btn)
 	corner.CornerRadius = UDim.new(0,8)
-	corner.Parent = btn
 
-	local enabled = false
+	local state = false
 
 	btn.MouseButton1Click:Connect(function()
 
-		enabled = not enabled
-		
-		btn.Text = txt.." : "..(enabled and "ON" or "OFF")
-		btn.BackgroundColor3 = enabled and Color3.fromRGB(50,150,50) or Color3.fromRGB(30,30,30)
+		state = not state
+		btn.Text = name.." : "..(state and "ON" or "OFF")
+		btn.BackgroundColor3 = state and Color3.fromRGB(50,150,50) or Color3.fromRGB(30,30,30)
 
-		callback(enabled)
-
-	end)
-
-end
-
--- ========================
--- DRAG SYSTEM (FIXED)
--- ========================
-
-local function setupDragging(gui)
-
-	local dragging = false
-	local dragInput
-	local startPos
-	local startGuiPos
-
-	gui.InputBegan:Connect(function(input)
-
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-		or input.UserInputType == Enum.UserInputType.Touch then
-
-			dragging = true
-			startPos = input.Position
-			startGuiPos = gui.Position
-			dragInput = input
-
-			input.Changed:Connect(function()
-
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-
-			end)
-
-		end
-
-	end)
-
-	gui.InputChanged:Connect(function(input)
-
-		if input.UserInputType == Enum.UserInputType.MouseMovement
-		or input.UserInputType == Enum.UserInputType.Touch then
-
-			dragInput = input
-
-		end
-
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-
-		if input == dragInput and dragging then
-
-			local delta = input.Position - startPos
-
-			gui.Position = UDim2.new(
-				startGuiPos.X.Scale,
-				startGuiPos.X.Offset + delta.X,
-				startGuiPos.Y.Scale,
-				startGuiPos.Y.Offset + delta.Y
-			)
-
-		end
+		callback(state)
 
 	end)
 
 end
 
--- ========================
--- FITUR
--- ========================
+-- =========================
+-- INFINITE JUMP
+-- =========================
 
--- Instant Interact
-local instantEnabled = false
-
-createToggle("Instant Interact",function(state)
-
-	instantEnabled = state
-	
-	for _,v in pairs(workspace:GetDescendants()) do
-		if v:IsA("ProximityPrompt") then
-			v.HoldDuration = state and 0 or 1
-		end
-	end
-	
-end)
-
-workspace.DescendantAdded:Connect(function(v)
-
-	if instantEnabled and v:IsA("ProximityPrompt") then
-		v.HoldDuration = 0
-	end
-
-end)
-
--- Infinite Jump
 local InfiniteJump = false
 
 createToggle("Infinite Jump",function(state)
@@ -242,32 +182,36 @@ UserInputService.JumpRequest:Connect(function()
 	if InfiniteJump then
 
 		local char = player.Character
-		
-		if char and char:FindFirstChildOfClass("Humanoid") then
-			char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+		if char then
+			local hum = char:FindFirstChildOfClass("Humanoid")
+			if hum then
+				hum:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
 		end
-		
+
 	end
 
 end)
 
--- Noclip
-local Noclip = false
+-- =========================
+-- NOCLIP
+-- =========================
+
+local noclip = false
 
 createToggle("Noclip",function(state)
-	Noclip = state
+	noclip = state
 end)
 
 RunService.Stepped:Connect(function()
 
-	if Noclip then
+	if noclip then
 
 		local char = player.Character
-		
 		if char then
-			for _,part in pairs(char:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = false
+			for _,v in pairs(char:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
 				end
 			end
 		end
@@ -277,30 +221,93 @@ RunService.Stepped:Connect(function()
 end)
 
 -- =========================
+-- FLY SYSTEM
+-- =========================
+
+local flying = false
+local bg
+local bv
+local speed = 60
+
+local function startFly()
+
+	local char = player.Character
+	if not char then return end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	local root = char:FindFirstChild("HumanoidRootPart")
+
+	if not hum or not root then return end
+
+	hum.PlatformStand = true
+
+	bg = Instance.new("BodyGyro",root)
+	bg.P = 9e4
+	bg.maxTorque = Vector3.new(9e9,9e9,9e9)
+
+	bv = Instance.new("BodyVelocity",root)
+	bv.maxForce = Vector3.new(9e9,9e9,9e9)
+
+	RunService.RenderStepped:Connect(function()
+
+		if not flying then return end
+
+		local cam = workspace.CurrentCamera
+		local move = hum.MoveDirection
+
+		bv.Velocity = cam.CFrame:VectorToWorldSpace(move) * speed
+		bg.CFrame = cam.CFrame
+
+	end)
+
+end
+
+local function stopFly()
+
+	local char = player.Character
+	if not char then return end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.PlatformStand = false
+	end
+
+	if bg then bg:Destroy() end
+	if bv then bv:Destroy() end
+
+end
+
+createToggle("Fly",function(state)
+
+	flying = state
+
+	if state then
+		startFly()
+	else
+		stopFly()
+	end
+
+end)
+
+-- =========================
 -- FPS & PING
 -- =========================
 
 local fpsGui = Instance.new("Frame")
-local fpsText = Instance.new("TextLabel")
-
 fpsGui.Parent = ScreenGui
 fpsGui.Size = UDim2.new(0,150,0,40)
 fpsGui.Position = UDim2.new(1,-170,0,10)
 fpsGui.BackgroundColor3 = Color3.fromRGB(20,20,20)
 fpsGui.Visible = false
-fpsGui.Active = true
 
-setupDragging(fpsGui)
+local fpsCorner = Instance.new("UICorner",fpsGui)
 
-local fpsCorner = Instance.new("UICorner")
-fpsCorner.CornerRadius = UDim.new(0,10)
-fpsCorner.Parent = fpsGui
-
+local fpsText = Instance.new("TextLabel")
 fpsText.Parent = fpsGui
 fpsText.Size = UDim2.new(1,0,1,0)
 fpsText.BackgroundTransparency = 1
 fpsText.Font = Enum.Font.GothamBold
-fpsText.TextColor3 = Color3.fromRGB(255,255,255)
+fpsText.TextColor3 = Color3.new(1,1,1)
 fpsText.TextSize = 14
 fpsText.Text = "FPS: 0 | Ping: 0"
 
@@ -310,7 +317,7 @@ local lastTime = tick()
 RunService.RenderStepped:Connect(function()
 
 	frames += 1
-	
+
 	if tick() - lastTime >= 1 then
 
 		local fps = frames
@@ -337,196 +344,10 @@ end)
 -- SERVER CHANGE
 -- =========================
 
-local serverFrame = Instance.new("Frame")
-local serverBtn = Instance.new("TextButton")
-local serverTitle = Instance.new("TextLabel")
+createToggle("Change Server",function(state)
 
-serverFrame.Parent = ScreenGui
-serverFrame.Size = UDim2.new(0,180,0,80)
-serverFrame.Position = UDim2.new(0.8,0,0.3,0)
-serverFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-serverFrame.Visible = false
-serverFrame.Active = true
-
-setupDragging(serverFrame)
-
-local serverCorner = Instance.new("UICorner")
-serverCorner.CornerRadius = UDim.new(0,10)
-serverCorner.Parent = serverFrame
-
-serverTitle.Parent = serverFrame
-serverTitle.Size = UDim2.new(1,0,0,30)
-serverTitle.BackgroundTransparency = 1
-serverTitle.Text = "Server Menu"
-serverTitle.Font = Enum.Font.GothamBold
-serverTitle.TextColor3 = Color3.fromRGB(255,255,255)
-serverTitle.TextSize = 14
-
-serverBtn.Parent = serverFrame
-serverBtn.Size = UDim2.new(0.9,0,0,35)
-serverBtn.Position = UDim2.new(0.05,0,0.5,0)
-serverBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-serverBtn.Text = "Change Server"
-serverBtn.Font = Enum.Font.GothamBold
-serverBtn.TextColor3 = Color3.fromRGB(255,255,255)
-serverBtn.TextSize = 14
-
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0,8)
-btnCorner.Parent = serverBtn
-
-serverBtn.MouseButton1Click:Connect(function()
-
-	local placeId = game.PlaceId
-	TeleportService:Teleport(placeId,player)
-
-end)
-
-createToggle("Change Server Menu",function(state)
-	serverFrame.Visible = state
-end)
-
--- =========================
--- FLY GUI
--- =========================
-
-local flyFrame = Instance.new("Frame")
-local flyToggle = Instance.new("TextButton")
-local flyUp = Instance.new("TextButton")
-local flyDown = Instance.new("TextButton")
-
-flyFrame.Parent = ScreenGui
-flyFrame.Size = UDim2.new(0,180,0,90)
-flyFrame.Position = UDim2.new(0.8,0,0.5,0)
-flyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-flyFrame.Visible = false
-flyFrame.Active = true
-
-setupDragging(flyFrame)
-
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0,10)
-corner.Parent = flyFrame
-
-flyToggle.Parent = flyFrame
-flyToggle.Size = UDim2.new(0.9,0,0,30)
-flyToggle.Position = UDim2.new(0.05,0,0.05,0)
-flyToggle.BackgroundColor3 = Color3.fromRGB(40,40,40)
-flyToggle.Text = "Fly : OFF"
-flyToggle.Font = Enum.Font.GothamBold
-flyToggle.TextColor3 = Color3.fromRGB(255,255,255)
-flyToggle.TextSize = 14
-
-flyUp.Parent = flyFrame
-flyUp.Size = UDim2.new(0.42,0,0,30)
-flyUp.Position = UDim2.new(0.05,0,0.55,0)
-flyUp.BackgroundColor3 = Color3.fromRGB(40,40,40)
-flyUp.Text = "UP"
-flyUp.Font = Enum.Font.GothamBold
-flyUp.TextColor3 = Color3.fromRGB(255,255,255)
-flyUp.TextSize = 14
-
-flyDown.Parent = flyFrame
-flyDown.Size = UDim2.new(0.42,0,0,30)
-flyDown.Position = UDim2.new(0.53,0,0.55,0)
-flyDown.BackgroundColor3 = Color3.fromRGB(40,40,40)
-flyDown.Text = "DOWN"
-flyDown.Font = Enum.Font.GothamBold
-flyDown.TextColor3 = Color3.fromRGB(255,255,255)
-flyDown.TextSize = 14
-
--- =========================
--- FLY SYSTEM
--- =========================
-
-local flying = false
-local speed = 50
-local bg
-local bv
-
-local function startFly()
-
-	local char = player.Character
-	if not char then return end
-
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	local root = char:FindFirstChild("HumanoidRootPart")
-	if not hum or not root then return end
-
-	hum.PlatformStand = true
-
-	bg = Instance.new("BodyGyro",root)
-	bg.P = 9e4
-	bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
-
-	bv = Instance.new("BodyVelocity",root)
-	bv.MaxForce = Vector3.new(9e9,9e9,9e9)
-
-	RunService.RenderStepped:Connect(function()
-
-		if not flying then return end
-
-		local move = hum.MoveDirection
-		local cam = workspace.CurrentCamera
-
-		bv.Velocity = cam.CFrame:VectorToWorldSpace(move) * speed
-		bg.CFrame = cam.CFrame
-
-	end)
-
-end
-
-local function stopFly()
-
-	local char = player.Character
-	if not char then return end
-
-	local hum = char:FindFirstChildOfClass("Humanoid")
-	if hum then
-		hum.PlatformStand = false
+	if state then
+		TeleportService:Teleport(game.PlaceId,player)
 	end
 
-	if bg then bg:Destroy() end
-	if bv then bv:Destroy() end
-
-end
-
-flyToggle.MouseButton1Click:Connect(function()
-
-	flying = not flying
-
-	if flying then
-		flyToggle.Text = "Fly : ON"
-		startFly()
-	else
-		flyToggle.Text = "Fly : OFF"
-		stopFly()
-	end
-
-end)
-
-flyUp.MouseButton1Down:Connect(function()
-
-	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	if root then
-		root.CFrame = root.CFrame * CFrame.new(0,5,0)
-	end
-
-end)
-
-flyDown.MouseButton1Down:Connect(function()
-
-	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	if root then
-		root.CFrame = root.CFrame * CFrame.new(0,-5,0)
-	end
-
-end)
-
--- =========================
--- TOGGLE UNTUK GUI FLY
--- =========================
-
-createToggle("Fly Menu",function(state)
-	flyFrame.Visible = state
 end)
