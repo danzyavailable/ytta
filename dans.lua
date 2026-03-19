@@ -387,17 +387,60 @@ createToggle("Change Server Menu",function(state)
 end)
 
 -- =========================
--- FLY FEATURE
+-- FLY GUI
 -- =========================
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local flyFrame = Instance.new("Frame")
+local flyToggle = Instance.new("TextButton")
+local flyUp = Instance.new("TextButton")
+local flyDown = Instance.new("TextButton")
 
-local player = Players.LocalPlayer
+flyFrame.Parent = ScreenGui
+flyFrame.Size = UDim2.new(0,180,0,90)
+flyFrame.Position = UDim2.new(0.8,0,0.5,0)
+flyFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+flyFrame.Visible = false
+flyFrame.Active = true
+
+setupDragging(flyFrame)
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,10)
+corner.Parent = flyFrame
+
+flyToggle.Parent = flyFrame
+flyToggle.Size = UDim2.new(0.9,0,0,30)
+flyToggle.Position = UDim2.new(0.05,0,0.05,0)
+flyToggle.BackgroundColor3 = Color3.fromRGB(40,40,40)
+flyToggle.Text = "Fly : OFF"
+flyToggle.Font = Enum.Font.GothamBold
+flyToggle.TextColor3 = Color3.fromRGB(255,255,255)
+flyToggle.TextSize = 14
+
+flyUp.Parent = flyFrame
+flyUp.Size = UDim2.new(0.42,0,0,30)
+flyUp.Position = UDim2.new(0.05,0,0.55,0)
+flyUp.BackgroundColor3 = Color3.fromRGB(40,40,40)
+flyUp.Text = "UP"
+flyUp.Font = Enum.Font.GothamBold
+flyUp.TextColor3 = Color3.fromRGB(255,255,255)
+flyUp.TextSize = 14
+
+flyDown.Parent = flyFrame
+flyDown.Size = UDim2.new(0.42,0,0,30)
+flyDown.Position = UDim2.new(0.53,0,0.55,0)
+flyDown.BackgroundColor3 = Color3.fromRGB(40,40,40)
+flyDown.Text = "DOWN"
+flyDown.Font = Enum.Font.GothamBold
+flyDown.TextColor3 = Color3.fromRGB(255,255,255)
+flyDown.TextSize = 14
+
+-- =========================
+-- FLY SYSTEM
+-- =========================
 
 local flying = false
 local speed = 50
-
 local bg
 local bv
 
@@ -405,33 +448,27 @@ local function startFly()
 
 	local char = player.Character
 	if not char then return end
-	
+
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	local root = char:FindFirstChild("HumanoidRootPart")
 	if not hum or not root then return end
 
-	flying = true
 	hum.PlatformStand = true
 
-	bg = Instance.new("BodyGyro")
+	bg = Instance.new("BodyGyro",root)
 	bg.P = 9e4
 	bg.MaxTorque = Vector3.new(9e9,9e9,9e9)
-	bg.CFrame = root.CFrame
-	bg.Parent = root
 
-	bv = Instance.new("BodyVelocity")
-	bv.Velocity = Vector3.new(0,0,0)
+	bv = Instance.new("BodyVelocity",root)
 	bv.MaxForce = Vector3.new(9e9,9e9,9e9)
-	bv.Parent = root
 
 	RunService.RenderStepped:Connect(function()
 
 		if not flying then return end
-		
-		local cam = workspace.CurrentCamera
-		
+
 		local move = hum.MoveDirection
-		
+		local cam = workspace.CurrentCamera
+
 		bv.Velocity = cam.CFrame:VectorToWorldSpace(move) * speed
 		bg.CFrame = cam.CFrame
 
@@ -443,26 +480,53 @@ local function stopFly()
 
 	local char = player.Character
 	if not char then return end
-	
+
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if hum then
 		hum.PlatformStand = false
 	end
-	
-	flying = false
-	
+
 	if bg then bg:Destroy() end
 	if bv then bv:Destroy() end
 
 end
 
--- toggle function
-local function toggleFly(state)
+flyToggle.MouseButton1Click:Connect(function()
 
-	if state then
+	flying = not flying
+
+	if flying then
+		flyToggle.Text = "Fly : ON"
 		startFly()
 	else
+		flyToggle.Text = "Fly : OFF"
 		stopFly()
 	end
 
-end
+end)
+
+flyUp.MouseButton1Down:Connect(function()
+
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if root then
+		root.CFrame = root.CFrame * CFrame.new(0,5,0)
+	end
+
+end)
+
+flyDown.MouseButton1Down:Connect(function()
+
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if root then
+		root.CFrame = root.CFrame * CFrame.new(0,-5,0)
+	end
+
+end)
+
+-- =========================
+-- TOGGLE UNTUK GUI FLY
+-- =========================
+
+createToggle("Fly Menu",function(state)
+	flyFrame.Visible = state
+end)
