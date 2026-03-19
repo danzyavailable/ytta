@@ -29,8 +29,9 @@ MainFrame.Size = UDim2.new(0, 250, 0, 240)
 MainFrame.Active = true
 MainFrame.Draggable = true -- Simple dragging
 
-local MainCorner = Instance.new("UICorner", MainFrame)
+local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 15)
+MainCorner.Parent = MainFrame
 
 -- Title Setup
 Title.Parent = MainFrame
@@ -40,7 +41,10 @@ Title.Text = "Script By Dansskiee"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
-Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 15)
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 15)
+TitleCorner.Parent = Title
 
 -- Minimize Button
 MinimizeBtn.Parent = MainFrame
@@ -88,14 +92,18 @@ Footer.TextSize = 11
 
 -- Fungsi Create Toggle
 local function createToggle(txt, callback)
-    local btn = Instance.new("TextButton", Container)
+    local btn = Instance.new("TextButton")
+    btn.Parent = Container
     btn.Size = UDim2.new(1, -10, 0, 35) -- Kasih gap dikit buat scrollbar
     btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     btn.Text = txt .. ": OFF"
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 13
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = btn
 
     local enabled = false  
     btn.MouseButton1Click:Connect(function()  
@@ -175,10 +183,11 @@ fpsGui.Size = UDim2.new(0,150,0,40)
 fpsGui.Position = UDim2.new(1,-170,0,10)
 fpsGui.BackgroundColor3 = Color3.fromRGB(20,20,20)
 fpsGui.Visible = false
-fpsGui.Active = true
 fpsGui.Draggable = true
 
-Instance.new("UICorner", fpsGui).CornerRadius = UDim.new(0,10)
+local fpsCorner = Instance.new("UICorner")
+fpsCorner.CornerRadius = UDim.new(0,10)
+fpsCorner.Parent = fpsGui
 
 fpsText.Parent = fpsGui
 fpsText.Size = UDim2.new(1,0,1,0)
@@ -227,9 +236,11 @@ serverFrame.Size = UDim2.new(0,180,0,80)
 serverFrame.Position = UDim2.new(0.8,0,0.3,0)
 serverFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 serverFrame.Visible = false
-serverFrame.Active = true
 serverFrame.Draggable = true
-Instance.new("UICorner",serverFrame).CornerRadius = UDim.new(0,10)
+
+local serverCorner = Instance.new("UICorner")
+serverCorner.CornerRadius = UDim.new(0,10)
+serverCorner.Parent = serverFrame
 
 serverTitle.Parent = serverFrame
 serverTitle.Size = UDim2.new(1,0,0,30)
@@ -247,7 +258,10 @@ serverBtn.Text = "Change Server"
 serverBtn.Font = Enum.Font.GothamBold
 serverBtn.TextColor3 = Color3.fromRGB(255,255,255)
 serverBtn.TextSize = 14
-Instance.new("UICorner",serverBtn).CornerRadius = UDim.new(0,8)
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0,8)
+btnCorner.Parent = serverBtn
 
 serverBtn.MouseButton1Click:Connect(function()
 	local placeId = game.PlaceId
