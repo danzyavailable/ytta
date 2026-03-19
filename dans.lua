@@ -221,3 +221,49 @@ end)
 createToggle("Show FPS & Ping", function(state)
 	fpsGui.Visible = state
 end)
+
+-- =========================
+-- CHANGE SERVER FEATURE
+-- =========================
+
+local TeleportService = game:GetService("TeleportService")
+
+local serverFrame = Instance.new("Frame")
+local serverBtn = Instance.new("TextButton")
+local serverTitle = Instance.new("TextLabel")
+
+serverFrame.Parent = ScreenGui
+serverFrame.Size = UDim2.new(0,180,0,80)
+serverFrame.Position = UDim2.new(0.8,0,0.3,0)
+serverFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+serverFrame.Visible = false
+serverFrame.Active = true
+serverFrame.Draggable = true
+Instance.new("UICorner",serverFrame).CornerRadius = UDim.new(0,10)
+
+serverTitle.Parent = serverFrame
+serverTitle.Size = UDim2.new(1,0,0,30)
+serverTitle.BackgroundTransparency = 1
+serverTitle.Text = "Server Menu"
+serverTitle.Font = Enum.Font.GothamBold
+serverTitle.TextColor3 = Color3.fromRGB(255,255,255)
+serverTitle.TextSize = 14
+
+serverBtn.Parent = serverFrame
+serverBtn.Size = UDim2.new(0.9,0,0,35)
+serverBtn.Position = UDim2.new(0.05,0,0.5,0)
+serverBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+serverBtn.Text = "Change Server"
+serverBtn.Font = Enum.Font.GothamBold
+serverBtn.TextColor3 = Color3.fromRGB(255,255,255)
+serverBtn.TextSize = 14
+Instance.new("UICorner",serverBtn).CornerRadius = UDim.new(0,8)
+
+serverBtn.MouseButton1Click:Connect(function()
+	local placeId = game.PlaceId
+	TeleportService:Teleport(placeId, player)
+end)
+
+createToggle("Change Server Menu", function(state)
+	serverFrame.Visible = state
+end)
