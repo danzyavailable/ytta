@@ -694,142 +694,97 @@ createToggle("Anti Lag", function(state)
 
 end)
 -- =========================
--- FRIEND TRACKER (FIX)
+-- FRIEND TRACKER FEATURE
 -- =========================
 
-task.spawn(function()
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-	if not ScreenGui then return end
+-- GUI FRIEND
+local friendFrame = Instance.new("Frame")
+friendFrame.Parent = ScreenGui
+friendFrame.Size = UDim2.new(0,260,0,300)
+friendFrame.Position = UDim2.new(0.65,0,0.35,0)
+friendFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+friendFrame.Visible = false
+friendFrame.Active = true
 
-	local friendGui = Instance.new("Frame")
-	local friendTitle = Instance.new("TextLabel")
-	local friendList = Instance.new("ScrollingFrame")
-	local friendLayout = Instance.new("UIListLayout")
-	local refreshBtn = Instance.new("TextButton")
+setupDragging(friendFrame)
 
-	local selectedFriend = nil
+local title = Instance.new("TextLabel")
+title.Parent = friendFrame
+title.Size = UDim2.new(1,0,0,30)
+title.BackgroundTransparency = 1
+title.Text = "Friend Tracker"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextSize = 14
 
-	friendGui.Parent = ScreenGui
-	friendGui.Size = UDim2.new(0,260,0,300)
-	friendGui.Position = UDim2.new(0.65,0,0.35,0)
-	friendGui.BackgroundColor3 = Color3.fromRGB(20,20,20)
-	friendGui.Visible = false
-	friendGui.Active = true
+-- LIST
+local list = Instance.new("ScrollingFrame")
+list.Parent = friendFrame
+list.Position = UDim2.new(0,10,0,35)
+list.Size = UDim2.new(1,-20,1,-45)
+list.BackgroundTransparency = 1
+list.ScrollBarThickness = 4
+list.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
-	setupDragging(friendGui)
+local layout = Instance.new("UIListLayout")
+layout.Parent = list
+layout.Padding = UDim.new(0,5)
 
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0,10)
-	corner.Parent = friendGui
+-- LOAD FRIEND
+local function loadFriends()
 
-	friendTitle.Parent = friendGui
-	friendTitle.Size = UDim2.new(1,0,0,30)
-	friendTitle.BackgroundTransparency = 1
-	friendTitle.Text = "Friend Tracker"
-	friendTitle.Font = Enum.Font.GothamBold
-	friendTitle.TextColor3 = Color3.fromRGB(255,255,255)
-	friendTitle.TextSize = 14
-
-	friendList.Parent = friendGui
-	friendList.Position = UDim2.new(0,10,0,35)
-	friendList.Size = UDim2.new(1,-20,1,-75)
-	friendList.BackgroundTransparency = 1
-	friendList.ScrollBarThickness = 4
-	friendList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-	friendLayout.Parent = friendList
-	friendLayout.Padding = UDim.new(0,6)
-
-	refreshBtn.Parent = friendGui
-	refreshBtn.Size = UDim2.new(0.9,0,0,28)
-	refreshBtn.Position = UDim2.new(0.05,1,-35)
-	refreshBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-	refreshBtn.Text = "Refresh Friends"
-	refreshBtn.Font = Enum.Font.GothamBold
-	refreshBtn.TextColor3 = Color3.fromRGB(255,255,255)
-	refreshBtn.TextSize = 13
-
-	local rc = Instance.new("UICorner")
-	rc.CornerRadius = UDim.new(0,6)
-	rc.Parent = refreshBtn
-
-	local function loadFriends()
-
-		for _,v in pairs(friendList:GetChildren()) do
-			if v:IsA("Frame") then
-				v:Destroy()
-			end
+	for _,v in pairs(list:GetChildren()) do
+		if v:IsA("Frame") then
+			v:Destroy()
 		end
-
-		local success,pages = pcall(function()
-			return Players:GetFriendsAsync(player.UserId)
-		end)
-
-		if not success then return end
-
-		repeat
-
-			for _,data in pairs(pages:GetCurrentPage()) do
-
-				local item = Instance.new("Frame")
-				item.Parent = friendList
-				item.Size = UDim2.new(1,0,0,35)
-				item.BackgroundColor3 = Color3.fromRGB(35,35,35)
-
-				local ic = Instance.new("UICorner")
-				ic.CornerRadius = UDim.new(0,6)
-				ic.Parent = item
-
-				local avatar = Instance.new("ImageLabel")
-				avatar.Parent = item
-				avatar.Size = UDim2.new(0,30,0,30)
-				avatar.Position = UDim2.new(0,3,0,2)
-				avatar.BackgroundTransparency = 1
-
-				local thumb = Players:GetUserThumbnailAsync(data.Id,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size48x48)
-				avatar.Image = thumb
-
-				local btn = Instance.new("TextButton")
-				btn.Parent = item
-				btn.Size = UDim2.new(1,-40,1,0)
-				btn.Position = UDim2.new(0,40,0,0)
-				btn.BackgroundTransparency = 1
-				btn.Text = data.Username
-				btn.Font = Enum.Font.GothamBold
-				btn.TextColor3 = Color3.fromRGB(255,255,255)
-				btn.TextSize = 13
-				btn.TextXAlignment = Enum.TextXAlignment.Left
-
-				btn.MouseButton1Click:Connect(function()
-
-					selectedFriend = data.Username
-
-					for _,v in pairs(friendList:GetChildren()) do
-						if v:IsA("Frame") then
-							v.BackgroundColor3 = Color3.fromRGB(35,35,35)
-						end
-					end
-
-					item.BackgroundColor3 = Color3.fromRGB(60,120,60)
-
-				end)
-
-			end
-
-			if not pages.IsFinished then
-				pages:AdvanceToNextPageAsync()
-			end
-
-		until pages.IsFinished
-
 	end
 
-	refreshBtn.MouseButton1Click:Connect(loadFriends)
-
-	loadFriends()
-
-	createToggle("Friend Tracker",function(state)
-		friendGui.Visible = state
+	local success,pages = pcall(function()
+		return Players:GetFriendsAsync(player.UserId)
 	end)
+
+	if not success then return end
+
+	repeat
+
+		for _,data in pairs(pages:GetCurrentPage()) do
+
+			local item = Instance.new("Frame")
+			item.Parent = list
+			item.Size = UDim2.new(1,0,0,30)
+			item.BackgroundColor3 = Color3.fromRGB(35,35,35)
+
+			local name = Instance.new("TextLabel")
+			name.Parent = item
+			name.Size = UDim2.new(1,0,1,0)
+			name.BackgroundTransparency = 1
+			name.Text = data.Username
+			name.Font = Enum.Font.Gotham
+			name.TextColor3 = Color3.fromRGB(255,255,255)
+			name.TextSize = 13
+
+		end
+
+		if not pages.IsFinished then
+			pages:AdvanceToNextPageAsync()
+		end
+
+	until pages.IsFinished
+
+end
+
+loadFriends()
+
+-- TOGGLE DI GUI UTAMA
+createToggle("Friend Tracker",function(state)
+
+	if state then
+		friendFrame.Visible = true
+	else
+		friendFrame.Visible = false
+	end
 
 end)
