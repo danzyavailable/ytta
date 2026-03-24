@@ -654,42 +654,115 @@ createToggle("Teleport To Player",function(state)
 	tpFrame.Visible = state
 end)
 
--- =========================
--- ANTI LAG
--- =========================
+-- COPY AVATAR PLAYER FEATURE
 
-local antiLag = false
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-createToggle("Anti Lag", function(state)
+-- GUI
+local AvatarGui = Instance.new("ScreenGui")
+AvatarGui.Parent = game.CoreGui
+AvatarGui.Name = "CopyAvatarGui"
 
-	antiLag = state
+local Frame = Instance.new("Frame",AvatarGui)
+Frame.Size = UDim2.new(0,250,0,300)
+Frame.Position = UDim2.new(0.8,0,0.3,0)
+Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Frame.BorderSizePixel = 0
+Instance.new("UICorner",Frame)
 
-	if state then
+local Title = Instance.new("TextLabel",Frame)
+Title.Size = UDim2.new(1,0,0,30)
+Title.Text = "Copy Avatar Player"
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextSize = 16
 
-		for _,v in pairs(workspace:GetDescendants()) do
+local Scroll = Instance.new("ScrollingFrame",Frame)
+Scroll.Size = UDim2.new(1,0,1,-60)
+Scroll.Position = UDim2.new(0,0,0,30)
+Scroll.CanvasSize = UDim2.new(0,0,0,0)
+Scroll.BackgroundTransparency = 1
+Scroll.BorderSizePixel = 0
 
-			if v:IsA("ParticleEmitter")
-			or v:IsA("Trail")
-			or v:IsA("Smoke")
-			or v:IsA("Fire")
-			or v:IsA("Sparkles") then
+local Layout = Instance.new("UIListLayout",Scroll)
+Layout.Padding = UDim.new(0,5)
 
-				v:Destroy()
+local Refresh = Instance.new("TextButton",Frame)
+Refresh.Size = UDim2.new(1,0,0,30)
+Refresh.Position = UDim2.new(0,0,1,-30)
+Refresh.Text = "Refresh Player"
+Refresh.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Refresh.TextColor3 = Color3.new(1,1,1)
+Refresh.Font = Enum.Font.GothamBold
+Instance.new("UICorner",Refresh)
 
-			end
+-------------------------------------------------
+-- COPY AVATAR FUNCTION
+-------------------------------------------------
 
-			if v:IsA("BasePart") then
-				v.Material = Enum.Material.Plastic
-				v.Reflectance = 0
-			end
+local function copyAvatar(target)
 
+	local success,desc = pcall(function()
+		return Players:GetHumanoidDescriptionFromUserId(target.UserId)
+	end)
+
+	if success and LocalPlayer.Character then
+
+		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+
+		if humanoid then
+			humanoid:ApplyDescription(desc)
 		end
-
-		workspace.GlobalShadows = false
-
-		local Lighting = game:GetService("Lighting")
-		Lighting.FogEnd = 9e9
 
 	end
 
-end)
+end
+
+-------------------------------------------------
+-- LOAD PLAYER LIST
+-------------------------------------------------
+
+local function loadPlayers()
+
+	for _,v in pairs(Scroll:GetChildren()) do
+		if v:IsA("TextButton") then
+			v:Destroy()
+		end
+	end
+
+	for _,plr in pairs(Players:GetPlayers()) do
+
+		local btn = Instance.new("TextButton",Scroll)
+
+		btn.Size = UDim2.new(1,-10,0,30)
+		btn.Text = plr.Name
+		btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+		btn.TextColor3 = Color3.new(1,1,1)
+		btn.Font = Enum.Font.GothamBold
+		btn.TextSize = 14
+
+		Instance.new("UICorner",btn)
+
+		btn.MouseButton1Click:Connect(function()
+			copyAvatar(plr)
+		end)
+
+	end
+
+	task.wait()
+	Scroll.CanvasSize = UDim2.new(0,0,0,Layout.AbsoluteContentSize.Y + 10)
+
+end
+
+-------------------------------------------------
+-- REFRESH
+-------------------------------------------------
+
+Refresh.MouseButton1Click:Connect(loadPlayers)
+
+loadPlayers()
+
+Players.PlayerAdded:Connect(loadPlayers)
+Players.PlayerRemoving:Connect(loadPlayers)
