@@ -693,3 +693,108 @@ createToggle("Anti Lag", function(state)
 	end
 
 end)
+
+-- =========================
+-- FRIEND JOIN MENU
+-- =========================
+
+local friendFrame = Instance.new("Frame")
+local friendTitle = Instance.new("TextLabel")
+local friendList = Instance.new("ScrollingFrame")
+local friendLayout = Instance.new("UIListLayout")
+
+friendFrame.Parent = ScreenGui
+friendFrame.Size = UDim2.new(0,220,0,260)
+friendFrame.Position = UDim2.new(0.65,0,0.35,0)
+friendFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+friendFrame.Visible = false
+friendFrame.Active = true
+
+setupDragging(friendFrame)
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,10)
+corner.Parent = friendFrame
+
+friendTitle.Parent = friendFrame
+friendTitle.Size = UDim2.new(1,0,0,30)
+friendTitle.BackgroundTransparency = 1
+friendTitle.Text = "Friend Join Menu"
+friendTitle.Font = Enum.Font.GothamBold
+friendTitle.TextColor3 = Color3.fromRGB(255,255,255)
+friendTitle.TextSize = 14
+
+friendList.Parent = friendFrame
+friendList.Position = UDim2.new(0,10,0,35)
+friendList.Size = UDim2.new(1,-20,1,-45)
+friendList.BackgroundTransparency = 1
+friendList.ScrollBarThickness = 4
+friendList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+friendLayout.Parent = friendList
+friendLayout.Padding = UDim.new(0,6)
+
+-- LOAD FRIENDS
+local function loadFriends()
+
+	for _,v in pairs(friendList:GetChildren()) do
+		if v:IsA("TextButton") then
+			v:Destroy()
+		end
+	end
+
+	local success, pages = pcall(function()
+		return Players:GetFriendsAsync(player.UserId)
+	end)
+
+	if success then
+
+		repeat
+
+			local friends = pages:GetCurrentPage()
+
+			for _,data in pairs(friends) do
+
+				local btn = Instance.new("TextButton")
+
+				btn.Parent = friendList
+				btn.Size = UDim2.new(1,0,0,30)
+				btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+				btn.Text = data.Username
+				btn.Font = Enum.Font.GothamBold
+				btn.TextColor3 = Color3.fromRGB(255,255,255)
+				btn.TextSize = 13
+
+				local c = Instance.new("UICorner")
+				c.CornerRadius = UDim.new(0,6)
+				c.Parent = btn
+
+				btn.MouseButton1Click:Connect(function()
+
+					local success, placeId, jobId = pcall(function()
+						return player:GetJoinData()
+					end)
+
+					if success and placeId then
+						TeleportService:Teleport(placeId, player)
+					end
+
+				end)
+
+			end
+
+			if not pages.IsFinished then
+				pages:AdvanceToNextPageAsync()
+			end
+
+		until pages.IsFinished
+
+	end
+
+end
+
+loadFriends()
+
+createToggle("Friend Join Menu",function(state)
+	friendFrame.Visible = state
+end)
