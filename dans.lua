@@ -714,8 +714,13 @@ createToggle("Anti Lag", function(state)
 end)
 
 -- =========================
--- SPEED BOOST GUI
+-- SPEED BOOST GUI (FIX)
 -- =========================
+
+local speedGui = Instance.new("ScreenGui")
+speedGui.Name = "SpeedGui"
+speedGui.Parent = playerGui
+speedGui.ResetOnSpawn = false
 
 local speedFrame = Instance.new("Frame")
 local speedTitle = Instance.new("TextLabel")
@@ -727,9 +732,9 @@ local speedEnabled = false
 local speedActive = false
 local speedValue = 16
 
-speedFrame.Parent = ScreenGui
+speedFrame.Parent = speedGui
 speedFrame.Size = UDim2.new(0,200,0,150)
-speedFrame.Position = UDim2.new(0.75,0,0.5,0)
+speedFrame.Position = UDim2.new(0.7,0,0.5,0)
 speedFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 speedFrame.Visible = false
 speedFrame.Active = true
@@ -749,7 +754,7 @@ speedTitle.Font = Enum.Font.GothamBold
 speedTitle.TextColor3 = Color3.fromRGB(255,255,255)
 speedTitle.TextSize = 14
 
--- INPUT SPEED
+-- INPUT
 speedBox.Parent = speedFrame
 speedBox.Size = UDim2.new(0.8,0,0,30)
 speedBox.Position = UDim2.new(0.1,0,0.35,0)
@@ -778,7 +783,7 @@ local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(0,6)
 btnCorner.Parent = applyBtn
 
--- SPEED ON/OFF BUTTON
+-- SPEED TOGGLE
 speedToggleBtn.Parent = speedFrame
 speedToggleBtn.Size = UDim2.new(0.8,0,0,30)
 speedToggleBtn.Position = UDim2.new(0.1,0,0.8,0)
@@ -792,7 +797,7 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0,6)
 toggleCorner.Parent = speedToggleBtn
 
--- APPLY SPEED VALUE
+-- APPLY SPEED
 applyBtn.MouseButton1Click:Connect(function()
 
 	local num = tonumber(speedBox.Text)
@@ -803,7 +808,7 @@ applyBtn.MouseButton1Click:Connect(function()
 
 end)
 
--- TOGGLE SPEED INSIDE GUI
+-- TOGGLE SPEED
 speedToggleBtn.MouseButton1Click:Connect(function()
 
 	speedActive = not speedActive
