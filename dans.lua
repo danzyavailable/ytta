@@ -461,6 +461,113 @@ btnCorner.CornerRadius = UDim.new(0,8)
 btnCorner.Parent = tpBtn
 
 -- =========================
+-- TELEPORT TO PLAYER
+-- =========================
+
+local tpFrame = Instance.new("Frame")
+local tpTitle = Instance.new("TextLabel")
+local tpMinimize = Instance.new("TextButton")
+local tpList = Instance.new("ScrollingFrame")
+local tpLayout = Instance.new("UIListLayout")
+local tpBtn = Instance.new("TextButton")
+local refreshBtn = Instance.new("TextButton")
+
+local selectedPlayer = nil
+local tpMinimized = false
+
+tpFrame.Parent = ScreenGui
+tpFrame.Size = UDim2.new(0,220,0,260)
+tpFrame.Position = UDim2.new(0.75,0,0.35,0)
+tpFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+tpFrame.Visible = false
+tpFrame.Active = true
+
+setupDragging(tpFrame)
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,10)
+corner.Parent = tpFrame
+
+-- TITLE
+tpTitle.Parent = tpFrame
+tpTitle.Size = UDim2.new(1,0,0,30)
+tpTitle.BackgroundTransparency = 1
+tpTitle.Text = "Teleport To Player"
+tpTitle.Font = Enum.Font.GothamBold
+tpTitle.TextColor3 = Color3.fromRGB(255,255,255)
+tpTitle.TextSize = 14
+
+-- MINIMIZE BUTTON
+tpMinimize.Parent = tpFrame
+tpMinimize.Size = UDim2.new(0,25,0,25)
+tpMinimize.Position = UDim2.new(1,-30,0,3)
+tpMinimize.BackgroundTransparency = 1
+tpMinimize.Text = "▼"
+tpMinimize.Font = Enum.Font.GothamBold
+tpMinimize.TextColor3 = Color3.fromRGB(255,255,255)
+tpMinimize.TextSize = 16
+
+-- PLAYER LIST
+tpList.Parent = tpFrame
+tpList.Position = UDim2.new(0,10,0,35)
+tpList.Size = UDim2.new(1,-20,0,150)
+tpList.BackgroundTransparency = 1
+tpList.ScrollBarThickness = 4
+tpList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+tpLayout.Parent = tpList
+tpLayout.Padding = UDim.new(0,5)
+
+-- REFRESH BUTTON
+refreshBtn.Parent = tpFrame
+refreshBtn.Size = UDim2.new(0.9,0,0,30)
+refreshBtn.Position = UDim2.new(0.05,0,1,-80)
+refreshBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+refreshBtn.Text = "Refresh User"
+refreshBtn.Font = Enum.Font.GothamBold
+refreshBtn.TextColor3 = Color3.fromRGB(255,255,255)
+refreshBtn.TextSize = 13
+
+local refreshCorner = Instance.new("UICorner")
+refreshCorner.CornerRadius = UDim.new(0,8)
+refreshCorner.Parent = refreshBtn
+
+-- TELEPORT BUTTON
+tpBtn.Parent = tpFrame
+tpBtn.Size = UDim2.new(0.9,0,0,35)
+tpBtn.Position = UDim2.new(0.05,0,1,-40)
+tpBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+tpBtn.Text = "Teleport"
+tpBtn.Font = Enum.Font.GothamBold
+tpBtn.TextColor3 = Color3.fromRGB(255,255,255)
+tpBtn.TextSize = 14
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0,8)
+btnCorner.Parent = tpBtn
+
+-- =========================
+-- MINIMIZE SYSTEM
+-- =========================
+
+tpMinimize.MouseButton1Click:Connect(function()
+
+	tpMinimized = not tpMinimized
+
+	tpList.Visible = not tpMinimized
+	refreshBtn.Visible = not tpMinimized
+	tpBtn.Visible = not tpMinimized
+
+	tpFrame:TweenSize(
+		tpMinimized and UDim2.new(0,220,0,35) or UDim2.new(0,220,0,260),
+		"Out","Quart",0.25,true
+	)
+
+	tpMinimize.Text = tpMinimized and "▲" or "▼"
+
+end)
+
+-- =========================
 -- REFRESH PLAYER LIST
 -- =========================
 
@@ -511,7 +618,6 @@ end
 
 refreshPlayers()
 
--- AUTO UPDATE PLAYER LIST
 Players.PlayerAdded:Connect(refreshPlayers)
 Players.PlayerRemoving:Connect(refreshPlayers)
 
