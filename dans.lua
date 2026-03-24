@@ -385,3 +385,165 @@ end)
 createToggle("Change Server Menu",function(state)
 	serverFrame.Visible = state
 end)
+
+-- =========================
+-- TELEPORT TO PLAYER
+-- =========================
+
+local tpFrame = Instance.new("Frame")
+local tpTitle = Instance.new("TextLabel")
+local tpList = Instance.new("ScrollingFrame")
+local tpLayout = Instance.new("UIListLayout")
+local tpBtn = Instance.new("TextButton")
+local refreshBtn = Instance.new("TextButton")
+
+local selectedPlayer = nil
+
+tpFrame.Parent = ScreenGui
+tpFrame.Size = UDim2.new(0,220,0,260)
+tpFrame.Position = UDim2.new(0.75,0,0.35,0)
+tpFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+tpFrame.Visible = false
+tpFrame.Active = true
+
+setupDragging(tpFrame)
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,10)
+corner.Parent = tpFrame
+
+-- TITLE
+tpTitle.Parent = tpFrame
+tpTitle.Size = UDim2.new(1,0,0,30)
+tpTitle.BackgroundTransparency = 1
+tpTitle.Text = "Teleport To Player"
+tpTitle.Font = Enum.Font.GothamBold
+tpTitle.TextColor3 = Color3.fromRGB(255,255,255)
+tpTitle.TextSize = 14
+
+-- PLAYER LIST
+tpList.Parent = tpFrame
+tpList.Position = UDim2.new(0,10,0,35)
+tpList.Size = UDim2.new(1,-20,0,150)
+tpList.BackgroundTransparency = 1
+tpList.ScrollBarThickness = 4
+tpList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+tpLayout.Parent = tpList
+tpLayout.Padding = UDim.new(0,5)
+
+-- REFRESH BUTTON
+refreshBtn.Parent = tpFrame
+refreshBtn.Size = UDim2.new(0.9,0,0,30)
+refreshBtn.Position = UDim2.new(0.05,0,1,-80)
+refreshBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+refreshBtn.Text = "Refresh User"
+refreshBtn.Font = Enum.Font.GothamBold
+refreshBtn.TextColor3 = Color3.fromRGB(255,255,255)
+refreshBtn.TextSize = 13
+
+local refreshCorner = Instance.new("UICorner")
+refreshCorner.CornerRadius = UDim.new(0,8)
+refreshCorner.Parent = refreshBtn
+
+-- TELEPORT BUTTON
+tpBtn.Parent = tpFrame
+tpBtn.Size = UDim2.new(0.9,0,0,35)
+tpBtn.Position = UDim2.new(0.05,0,1,-40)
+tpBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+tpBtn.Text = "Teleport"
+tpBtn.Font = Enum.Font.GothamBold
+tpBtn.TextColor3 = Color3.fromRGB(255,255,255)
+tpBtn.TextSize = 14
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0,8)
+btnCorner.Parent = tpBtn
+
+-- =========================
+-- REFRESH PLAYER LIST
+-- =========================
+
+local function refreshPlayers()
+
+	for _,v in pairs(tpList:GetChildren()) do
+		if v:IsA("TextButton") then
+			v:Destroy()
+		end
+	end
+
+	for _,plr in pairs(Players:GetPlayers()) do
+
+		if plr ~= player then
+
+			local btn = Instance.new("TextButton")
+			btn.Parent = tpList
+			btn.Size = UDim2.new(1,0,0,30)
+			btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+			btn.Text = plr.Name
+			btn.Font = Enum.Font.GothamBold
+			btn.TextColor3 = Color3.fromRGB(255,255,255)
+			btn.TextSize = 13
+
+			local c = Instance.new("UICorner")
+			c.CornerRadius = UDim.new(0,6)
+			c.Parent = btn
+
+			btn.MouseButton1Click:Connect(function()
+
+				selectedPlayer = plr
+
+				for _,b in pairs(tpList:GetChildren()) do
+					if b:IsA("TextButton") then
+						b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+					end
+				end
+
+				btn.BackgroundColor3 = Color3.fromRGB(60,120,60)
+
+			end)
+
+		end
+
+	end
+
+end
+
+refreshPlayers()
+
+-- AUTO UPDATE PLAYER LIST
+Players.PlayerAdded:Connect(refreshPlayers)
+Players.PlayerRemoving:Connect(refreshPlayers)
+
+-- MANUAL REFRESH
+refreshBtn.MouseButton1Click:Connect(function()
+	refreshPlayers()
+end)
+
+-- TELEPORT FUNCTION
+tpBtn.MouseButton1Click:Connect(function()
+
+	if selectedPlayer then
+
+		local targetChar = selectedPlayer.Character
+		local myChar = player.Character
+
+		if targetChar and myChar then
+
+			local hrp1 = myChar:FindFirstChild("HumanoidRootPart")
+			local hrp2 = targetChar:FindFirstChild("HumanoidRootPart")
+
+			if hrp1 and hrp2 then
+				hrp1.CFrame = hrp2.CFrame + Vector3.new(2,0,2)
+			end
+
+		end
+
+	end
+
+end)
+
+-- TOGGLE
+createToggle("Teleport To Player",function(state)
+	tpFrame.Visible = state
+end)
