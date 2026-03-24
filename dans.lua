@@ -713,18 +713,112 @@ createToggle("Anti Lag", function(state)
 
 end)
 
+-- =========================
+-- SPEED BOOST GUI
+-- =========================
 
--- =========================
--- SPEED BOOST
--- =========================
+local speedFrame = Instance.new("Frame")
+local speedTitle = Instance.new("TextLabel")
+local speedBox = Instance.new("TextBox")
+local applyBtn = Instance.new("TextButton")
+local speedToggleBtn = Instance.new("TextButton")
 
 local speedEnabled = false
-local speedValue = 50
+local speedActive = false
+local speedValue = 16
 
-createToggle("Speed Boost", function(state)
-	speedEnabled = state
+speedFrame.Parent = ScreenGui
+speedFrame.Size = UDim2.new(0,200,0,150)
+speedFrame.Position = UDim2.new(0.75,0,0.5,0)
+speedFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+speedFrame.Visible = false
+speedFrame.Active = true
+
+setupDragging(speedFrame)
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,10)
+corner.Parent = speedFrame
+
+-- TITLE
+speedTitle.Parent = speedFrame
+speedTitle.Size = UDim2.new(1,0,0,30)
+speedTitle.BackgroundTransparency = 1
+speedTitle.Text = "Speed Boost"
+speedTitle.Font = Enum.Font.GothamBold
+speedTitle.TextColor3 = Color3.fromRGB(255,255,255)
+speedTitle.TextSize = 14
+
+-- INPUT SPEED
+speedBox.Parent = speedFrame
+speedBox.Size = UDim2.new(0.8,0,0,30)
+speedBox.Position = UDim2.new(0.1,0,0.35,0)
+speedBox.BackgroundColor3 = Color3.fromRGB(35,35,35)
+speedBox.Text = "Enter Speed"
+speedBox.Font = Enum.Font.GothamBold
+speedBox.TextColor3 = Color3.fromRGB(255,255,255)
+speedBox.TextSize = 13
+speedBox.ClearTextOnFocus = true
+
+local boxCorner = Instance.new("UICorner")
+boxCorner.CornerRadius = UDim.new(0,6)
+boxCorner.Parent = speedBox
+
+-- APPLY BUTTON
+applyBtn.Parent = speedFrame
+applyBtn.Size = UDim2.new(0.8,0,0,30)
+applyBtn.Position = UDim2.new(0.1,0,0.6,0)
+applyBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+applyBtn.Text = "Apply Speed"
+applyBtn.Font = Enum.Font.GothamBold
+applyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+applyBtn.TextSize = 13
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0,6)
+btnCorner.Parent = applyBtn
+
+-- SPEED ON/OFF BUTTON
+speedToggleBtn.Parent = speedFrame
+speedToggleBtn.Size = UDim2.new(0.8,0,0,30)
+speedToggleBtn.Position = UDim2.new(0.1,0,0.8,0)
+speedToggleBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+speedToggleBtn.Text = "Speed : OFF"
+speedToggleBtn.Font = Enum.Font.GothamBold
+speedToggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+speedToggleBtn.TextSize = 13
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0,6)
+toggleCorner.Parent = speedToggleBtn
+
+-- APPLY SPEED VALUE
+applyBtn.MouseButton1Click:Connect(function()
+
+	local num = tonumber(speedBox.Text)
+
+	if num then
+		speedValue = num
+	end
+
 end)
 
+-- TOGGLE SPEED INSIDE GUI
+speedToggleBtn.MouseButton1Click:Connect(function()
+
+	speedActive = not speedActive
+
+	if speedActive then
+		speedToggleBtn.Text = "Speed : ON"
+		speedToggleBtn.BackgroundColor3 = Color3.fromRGB(50,150,50)
+	else
+		speedToggleBtn.Text = "Speed : OFF"
+		speedToggleBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	end
+
+end)
+
+-- SPEED SYSTEM
 RunService.RenderStepped:Connect(function()
 
 	local char = player.Character
@@ -733,10 +827,18 @@ RunService.RenderStepped:Connect(function()
 	local hum = char:FindFirstChildOfClass("Humanoid")
 	if not hum then return end
 
-	if speedEnabled then
+	if speedEnabled and speedActive then
 		hum.WalkSpeed = speedValue
 	else
 		hum.WalkSpeed = 16
 	end
+
+end)
+
+-- TOGGLE MENU
+createToggle("Speed Boost Mode", function(state)
+
+	speedEnabled = state
+	speedFrame.Visible = state
 
 end)
