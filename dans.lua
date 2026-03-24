@@ -654,205 +654,159 @@ createToggle("Teleport To Player",function(state)
 	tpFrame.Visible = state
 end)
 
---================================================
--- NAME + DISTANCE ESP
---================================================
+--========================================
+-- SPECTATE PLAYER SYSTEM (FULL)
+--========================================
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
-local ESPEnabled = false
-local ESP = {}
-
-function TogglePlayerESP()
-
-ESPEnabled = not ESPEnabled
-
-if ESPEnabled then
-
-	for _,player in pairs(Players:GetPlayers()) do
-
-		if player ~= LocalPlayer then
-
-			local Billboard = Instance.new("BillboardGui")
-			Billboard.Size = UDim2.new(0,200,0,40)
-			Billboard.AlwaysOnTop = true
-			Billboard.Name = "NameDistanceESP"
-
-			local Label = Instance.new("TextLabel",Billboard)
-			Label.Size = UDim2.new(1,0,1,0)
-			Label.BackgroundTransparency = 1
-			Label.TextColor3 = Color3.fromRGB(255,255,255)
-			Label.TextStrokeTransparency = 0
-			Label.Font = Enum.Font.GothamBold
-			Label.TextSize = 14
-
-			ESP[player] = {gui = Billboard,label = Label}
-
-		end
-
-	end
-
-else
-
-	for _,v in pairs(ESP) do
-		if v.gui then
-			v.gui:Destroy()
-		end
-	end
-
-	ESP = {}
-
-end
-
-end
-
-RunService.RenderStepped:Connect(function()
-
-if not ESPEnabled then return end
-
-for player,data in pairs(ESP) do
-
-	local char = player.Character
-	local myChar = LocalPlayer.Character
-
-	if char and char:FindFirstChild("Head") and myChar and myChar:FindFirstChild("HumanoidRootPart") then
-
-		local head = char.Head
-		local root = myChar.HumanoidRootPart
-
-		if not data.gui.Parent then
-			data.gui.Parent = head
-		end
-
-		local dist = math.floor((root.Position - head.Position).Magnitude)
-
-		data.label.Text = player.Name.." | "..dist.."m"
-
-	end
-
-end
-
-end)
-
---================================================
--- SPECTATE PLAYER GUI
---================================================
-
 local Camera = workspace.CurrentCamera
+
+local SpectateEnabled = false
+local currentIndex = nil
+local playerList = {}
+
+--========================================
+-- MAIN GUI
+--========================================
 
 local SpectateGui = Instance.new("ScreenGui")
 SpectateGui.Parent = game.CoreGui
-SpectateGui.Name = "SpectatePlayerGui"
+SpectateGui.Name = "SpectateGui"
+SpectateGui.Enabled = false
 
 local Main = Instance.new("Frame",SpectateGui)
 Main.Size = UDim2.new(0,260,0,320)
 Main.Position = UDim2.new(0.75,0,0.3,0)
 Main.BackgroundColor3 = Color3.fromRGB(30,30,30)
 Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
 Instance.new("UICorner",Main)
 
 local Title = Instance.new("TextLabel",Main)
-Title.Text = "Spectate Player"
 Title.Size = UDim2.new(1,0,0,35)
 Title.BackgroundTransparency = 1
+Title.Text = "Spectate Player"
 Title.TextColor3 = Color3.new(1,1,1)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
 
 local Minimize = Instance.new("TextButton",Main)
-Minimize.Text = "-"
 Minimize.Size = UDim2.new(0,30,0,25)
 Minimize.Position = UDim2.new(1,-35,0,5)
+Minimize.Text = "-"
 Minimize.BackgroundColor3 = Color3.fromRGB(60,60,60)
 Minimize.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner",Minimize)
 
-local Scroll = Instance.new("ScrollingFrame",Main)
-Scroll.Size = UDim2.new(1,-10,1,-120)
-Scroll.Position = UDim2.new(0,5,0,40)
-Scroll.CanvasSize = UDim2.new(0,0,0,0)
+local Content = Instance.new("Frame",Main)
+Content.Size = UDim2.new(1,0,1,-40)
+Content.Position = UDim2.new(0,0,0,40)
+Content.BackgroundTransparency = 1
+
+local Scroll = Instance.new("ScrollingFrame",Content)
+Scroll.Size = UDim2.new(1,-10,1,0)
+Scroll.Position = UDim2.new(0,5,0,0)
 Scroll.BackgroundTransparency = 1
 Scroll.BorderSizePixel = 0
 
 local Layout = Instance.new("UIListLayout",Scroll)
 Layout.Padding = UDim.new(0,4)
 
-local Controls = Instance.new("Frame",Main)
-Controls.Size = UDim2.new(1,0,0,60)
-Controls.Position = UDim2.new(0,0,1,-60)
-Controls.BackgroundTransparency = 1
+--========================================
+-- CONTROL BAR (BOTTOM)
+--========================================
 
-local Prev = Instance.new("TextButton",Controls)
-Prev.Text = "<"
-Prev.Size = UDim2.new(0.3,0,0.6,0)
-Prev.Position = UDim2.new(0.05,0,0.2,0)
-Prev.BackgroundColor3 = Color3.fromRGB(50,50,50)
-Prev.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner",Prev)
+local ControlGui = Instance.new("ScreenGui")
+ControlGui.Parent = game.CoreGui
+ControlGui.Enabled = false
 
-local Exit = Instance.new("TextButton",Controls)
-Exit.Text = "Keluar"
-Exit.Size = UDim2.new(0.3,0,0.6,0)
-Exit.Position = UDim2.new(0.35,0,0.2,0)
-Exit.BackgroundColor3 = Color3.fromRGB(180,60,60)
-Exit.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner",Exit)
+local ControlFrame = Instance.new("Frame",ControlGui)
+ControlFrame.Size = UDim2.new(0,220,0,50)
+ControlFrame.Position = UDim2.new(0.5,-110,1,-90)
+ControlFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+ControlFrame.BorderSizePixel = 0
+Instance.new("UICorner",ControlFrame)
 
-local Next = Instance.new("TextButton",Controls)
-Next.Text = ">"
-Next.Size = UDim2.new(0.3,0,0.6,0)
-Next.Position = UDim2.new(0.65,0,0.2,0)
-Next.BackgroundColor3 = Color3.fromRGB(50,50,50)
-Next.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner",Next)
+local PrevBtn = Instance.new("TextButton",ControlFrame)
+PrevBtn.Size = UDim2.new(0.3,0,0.8,0)
+PrevBtn.Position = UDim2.new(0.05,0,0.1,0)
+PrevBtn.Text = "<"
+PrevBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+PrevBtn.TextColor3 = Color3.new(1,1,1)
+PrevBtn.Font = Enum.Font.GothamBold
+PrevBtn.TextSize = 18
+Instance.new("UICorner",PrevBtn)
 
-local playerList = {}
-local currentIndex = nil
+local ExitBtn = Instance.new("TextButton",ControlFrame)
+ExitBtn.Size = UDim2.new(0.3,0,0.8,0)
+ExitBtn.Position = UDim2.new(0.35,0,0.1,0)
+ExitBtn.Text = "Keluar"
+ExitBtn.BackgroundColor3 = Color3.fromRGB(200,60,60)
+ExitBtn.TextColor3 = Color3.new(1,1,1)
+ExitBtn.Font = Enum.Font.GothamBold
+ExitBtn.TextSize = 14
+Instance.new("UICorner",ExitBtn)
+
+local NextBtn = Instance.new("TextButton",ControlFrame)
+NextBtn.Size = UDim2.new(0.3,0,0.8,0)
+NextBtn.Position = UDim2.new(0.65,0,0.1,0)
+NextBtn.Text = ">"
+NextBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+NextBtn.TextColor3 = Color3.new(1,1,1)
+NextBtn.Font = Enum.Font.GothamBold
+NextBtn.TextSize = 18
+Instance.new("UICorner",NextBtn)
+
+--========================================
+-- PLAYER LIST
+--========================================
 
 local function refreshList()
 
-	playerList = {}
+playerList = {}
 
-	for _,v in pairs(Scroll:GetChildren()) do
-		if v:IsA("TextButton") then
-			v:Destroy()
-		end
+for _,v in pairs(Scroll:GetChildren()) do
+	if v:IsA("TextButton") then
+		v:Destroy()
+	end
+end
+
+for _,plr in pairs(Players:GetPlayers()) do
+
+	if plr ~= LocalPlayer then
+
+		table.insert(playerList,plr)
+
+		local btn = Instance.new("TextButton",Scroll)
+		btn.Size = UDim2.new(1,-5,0,30)
+		btn.Text = plr.Name
+		btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+		btn.TextColor3 = Color3.new(1,1,1)
+		btn.Font = Enum.Font.GothamBold
+		btn.TextSize = 14
+		Instance.new("UICorner",btn)
+
+		btn.MouseButton1Click:Connect(function()
+
+			currentIndex = table.find(playerList,plr)
+
+			if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+				Camera.CameraSubject = plr.Character.Humanoid
+				ControlGui.Enabled = true
+			end
+
+		end)
+
 	end
 
-	for _,plr in pairs(Players:GetPlayers()) do
+end
 
-		if plr ~= LocalPlayer then
-
-			table.insert(playerList,plr)
-
-			local btn = Instance.new("TextButton",Scroll)
-			btn.Size = UDim2.new(1,-5,0,30)
-			btn.Text = plr.Name
-			btn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-			btn.TextColor3 = Color3.new(1,1,1)
-			btn.Font = Enum.Font.GothamBold
-			btn.TextSize = 14
-
-			Instance.new("UICorner",btn)
-
-			btn.MouseButton1Click:Connect(function()
-
-				currentIndex = table.find(playerList,plr)
-
-				if plr.Character and plr.Character:FindFirstChild("Humanoid") then
-					Camera.CameraSubject = plr.Character.Humanoid
-				end
-
-			end)
-
-		end
-
-	end
-
-	task.wait()
-	Scroll.CanvasSize = UDim2.new(0,0,0,Layout.AbsoluteContentSize.Y)
+task.wait()
+Scroll.CanvasSize = UDim2.new(0,0,0,Layout.AbsoluteContentSize.Y)
 
 end
 
@@ -861,60 +815,96 @@ refreshList()
 Players.PlayerAdded:Connect(refreshList)
 Players.PlayerRemoving:Connect(refreshList)
 
-Next.MouseButton1Click:Connect(function()
+--========================================
+-- CONTROL BUTTONS
+--========================================
 
-	if not currentIndex then return end
+NextBtn.MouseButton1Click:Connect(function()
 
-	currentIndex += 1
-	if currentIndex > #playerList then
-		currentIndex = 1
-	end
+if not currentIndex then return end
 
-	local plr = playerList[currentIndex]
+currentIndex += 1
+if currentIndex > #playerList then
+	currentIndex = 1
+end
 
-	if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
-		Camera.CameraSubject = plr.Character.Humanoid
-	end
+local plr = playerList[currentIndex]
 
-end)
-
-Prev.MouseButton1Click:Connect(function()
-
-	if not currentIndex then return end
-
-	currentIndex -= 1
-	if currentIndex < 1 then
-		currentIndex = #playerList
-	end
-
-	local plr = playerList[currentIndex]
-
-	if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
-		Camera.CameraSubject = plr.Character.Humanoid
-	end
+if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+	Camera.CameraSubject = plr.Character.Humanoid
+end
 
 end)
 
-Exit.MouseButton1Click:Connect(function()
+PrevBtn.MouseButton1Click:Connect(function()
 
-	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-		Camera.CameraSubject = LocalPlayer.Character.Humanoid
-	end
+if not currentIndex then return end
 
-	currentIndex = nil
+currentIndex -= 1
+if currentIndex < 1 then
+	currentIndex = #playerList
+end
+
+local plr = playerList[currentIndex]
+
+if plr and plr.Character and plr.Character:FindFirstChild("Humanoid") then
+	Camera.CameraSubject = plr.Character.Humanoid
+end
 
 end)
+
+ExitBtn.MouseButton1Click:Connect(function()
+
+if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+	Camera.CameraSubject = LocalPlayer.Character.Humanoid
+end
+
+currentIndex = nil
+ControlGui.Enabled = false
+
+end)
+
+--========================================
+-- MINIMIZE (SMOOTH)
+--========================================
 
 local minimized = false
 
 Minimize.MouseButton1Click:Connect(function()
 
-	minimized = not minimized
+minimized = not minimized
 
-	if minimized then
-		Main.Size = UDim2.new(0,260,0,40)
-	else
-		Main.Size = UDim2.new(0,260,0,320)
-	end
+if minimized then
+
+	TweenService:Create(
+		Main,
+		TweenInfo.new(0.25),
+		{Size = UDim2.new(0,260,0,40)}
+	):Play()
+
+	Content.Visible = false
+
+else
+
+	TweenService:Create(
+		Main,
+		TweenInfo.new(0.25),
+		{Size = UDim2.new(0,260,0,320)}
+	):Play()
+
+	Content.Visible = true
+
+end
 
 end)
+
+--========================================
+-- TOGGLE FUNCTION
+--========================================
+
+function ToggleSpectate()
+
+SpectateEnabled = not SpectateEnabled
+SpectateGui.Enabled = SpectateEnabled
+
+end
