@@ -26,6 +26,7 @@ ScreenGui.Name = "DansskieeGui"
 ScreenGui.Parent = playerGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
+ScreenGui.ResetOnSpawn = false
 
 -- MAIN FRAME
 MainFrame.Parent = ScreenGui
