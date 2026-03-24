@@ -653,3 +653,90 @@ end)
 createToggle("Teleport To Player",function(state)
 	tpFrame.Visible = state
 end)
+
+-- =========================
+-- SHIFT LOCK
+-- =========================
+
+local shiftLock = false
+
+createToggle("Shift Lock", function(state)
+
+	shiftLock = state
+
+	if state then
+		player.DevEnableMouseLock = true
+	else
+		player.DevEnableMouseLock = false
+	end
+
+end)
+
+
+-- =========================
+-- ANTI LAG
+-- =========================
+
+local antiLag = false
+
+createToggle("Anti Lag", function(state)
+
+	antiLag = state
+
+	if state then
+
+		for _,v in pairs(workspace:GetDescendants()) do
+
+			if v:IsA("ParticleEmitter")
+			or v:IsA("Trail")
+			or v:IsA("Smoke")
+			or v:IsA("Fire")
+			or v:IsA("Sparkles") then
+
+				v:Destroy()
+
+			end
+
+			if v:IsA("BasePart") then
+				v.Material = Enum.Material.Plastic
+				v.Reflectance = 0
+			end
+
+		end
+
+		workspace.GlobalShadows = false
+
+		local Lighting = game:GetService("Lighting")
+		Lighting.FogEnd = 9e9
+
+	end
+
+end)
+
+
+-- =========================
+-- SPEED BOOST
+-- =========================
+
+local speedEnabled = false
+local speedValue = 50
+
+createToggle("Speed Boost", function(state)
+	speedEnabled = state
+end)
+
+RunService.RenderStepped:Connect(function()
+
+	local char = player.Character
+	if not char then return end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+
+	if speedEnabled then
+		hum.WalkSpeed = speedValue
+	else
+		hum.WalkSpeed = 16
+	end
+
+end)
