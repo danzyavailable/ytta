@@ -695,38 +695,60 @@ createToggle("Anti Lag", function(state)
 end)
 
 -- =========================
--- FRIEND JOIN MENU
+-- FRIEND TRACKER MENU
 -- =========================
 
-local friendFrame = Instance.new("Frame")
+local friendGui = Instance.new("Frame")
 local friendTitle = Instance.new("TextLabel")
 local friendList = Instance.new("ScrollingFrame")
 local friendLayout = Instance.new("UIListLayout")
+local refreshBtn = Instance.new("TextButton")
+local searchBox = Instance.new("TextBox")
 
-friendFrame.Parent = ScreenGui
-friendFrame.Size = UDim2.new(0,220,0,260)
-friendFrame.Position = UDim2.new(0.65,0,0.35,0)
-friendFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-friendFrame.Visible = false
-friendFrame.Active = true
+local selectedFriend = nil
+local friendsCache = {}
 
-setupDragging(friendFrame)
+friendGui.Parent = ScreenGui
+friendGui.Size = UDim2.new(0,260,0,320)
+friendGui.Position = UDim2.new(0.65,0,0.35,0)
+friendGui.BackgroundColor3 = Color3.fromRGB(20,20,20)
+friendGui.Visible = false
+friendGui.Active = true
+
+setupDragging(friendGui)
 
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0,10)
-corner.Parent = friendFrame
+corner.Parent = friendGui
 
-friendTitle.Parent = friendFrame
+-- TITLE
+friendTitle.Parent = friendGui
 friendTitle.Size = UDim2.new(1,0,0,30)
 friendTitle.BackgroundTransparency = 1
-friendTitle.Text = "Friend Join Menu"
+friendTitle.Text = "Friend Tracker"
 friendTitle.Font = Enum.Font.GothamBold
 friendTitle.TextColor3 = Color3.fromRGB(255,255,255)
 friendTitle.TextSize = 14
 
-friendList.Parent = friendFrame
-friendList.Position = UDim2.new(0,10,0,35)
-friendList.Size = UDim2.new(1,-20,1,-45)
+-- SEARCH
+searchBox.Parent = friendGui
+searchBox.Size = UDim2.new(0.9,0,0,28)
+searchBox.Position = UDim2.new(0.05,0,0,35)
+searchBox.BackgroundColor3 = Color3.fromRGB(35,35,35)
+searchBox.Text = ""
+searchBox.PlaceholderText = "Search Friend"
+searchBox.Font = Enum.Font.GothamBold
+searchBox.TextColor3 = Color3.fromRGB(255,255,255)
+searchBox.TextSize = 13
+
+local sCorner = Instance.new("UICorner")
+sCorner.CornerRadius = UDim.new(0,6)
+sCorner.Parent = searchBox
+
+-- LIST
+friendList.Parent = friendGui
+friendList.Position = UDim2.new(0,10,0,70)
+friendList.Size = UDim2.new(1,-20,1,-110)
 friendList.BackgroundTransparency = 1
 friendList.ScrollBarThickness = 4
 friendList.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -734,67 +756,122 @@ friendList.AutomaticCanvasSize = Enum.AutomaticSize.Y
 friendLayout.Parent = friendList
 friendLayout.Padding = UDim.new(0,6)
 
+-- REFRESH
+refreshBtn.Parent = friendGui
+refreshBtn.Size = UDim2.new(0.9,0,0,28)
+refreshBtn.Position = UDim2.new(0.05,1,-35)
+refreshBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+refreshBtn.Text = "Refresh Friends"
+refreshBtn.Font = Enum.Font.GothamBold
+refreshBtn.TextColor3 = Color3.fromRGB(255,255,255)
+refreshBtn.TextSize = 13
+
+local rCorner = Instance.new("UICorner")
+rCorner.CornerRadius = UDim.new(0,6)
+rCorner.Parent = refreshBtn
+
+-- CREATE FRIEND ITEM
+local function createFriendItem(data)
+
+	local item = Instance.new("Frame")
+	item.Parent = friendList
+	item.Size = UDim2.new(1,0,0,36)
+	item.BackgroundColor3 = Color3.fromRGB(35,35,35)
+
+	local itemCorner = Instance.new("UICorner")
+	itemCorner.CornerRadius = UDim.new(0,6)
+	itemCorner.Parent = item
+
+	local avatar = Instance.new("ImageLabel")
+	avatar.Parent = item
+	avatar.Size = UDim2.new(0,30,0,30)
+	avatar.Position = UDim2.new(0,3,0,3)
+	avatar.BackgroundTransparency = 1
+
+	local thumb = Players:GetUserThumbnailAsync(data.Id, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+	avatar.Image = thumb
+
+	local name = Instance.new("TextButton")
+	name.Parent = item
+	name.Size = UDim2.new(1,-40,1,0)
+	name.Position = UDim2.new(0,40,0,0)
+	name.BackgroundTransparency = 1
+	name.Text = data.Username
+	name.Font = Enum.Font.GothamBold
+	name.TextColor3 = Color3.fromRGB(255,255,255)
+	name.TextSize = 13
+	name.TextXAlignment = Enum.TextXAlignment.Left
+
+	name.MouseButton1Click:Connect(function()
+
+		selectedFriend = data.Username
+
+		for _,v in pairs(friendList:GetChildren()) do
+			if v:IsA("Frame") then
+				v.BackgroundColor3 = Color3.fromRGB(35,35,35)
+			end
+		end
+
+		item.BackgroundColor3 = Color3.fromRGB(60,120,60)
+
+	end)
+
+end
+
 -- LOAD FRIENDS
 local function loadFriends()
 
 	for _,v in pairs(friendList:GetChildren()) do
-		if v:IsA("TextButton") then
+		if v:IsA("Frame") then
 			v:Destroy()
 		end
 	end
+
+	friendsCache = {}
 
 	local success, pages = pcall(function()
 		return Players:GetFriendsAsync(player.UserId)
 	end)
 
-	if success then
+	if not success then return end
 
-		repeat
+	repeat
 
-			local friends = pages:GetCurrentPage()
+		local friends = pages:GetCurrentPage()
 
-			for _,data in pairs(friends) do
+		for _,data in pairs(friends) do
+			table.insert(friendsCache,data)
+			createFriendItem(data)
+		end
 
-				local btn = Instance.new("TextButton")
+		if not pages.IsFinished then
+			pages:AdvanceToNextPageAsync()
+		end
 
-				btn.Parent = friendList
-				btn.Size = UDim2.new(1,0,0,30)
-				btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-				btn.Text = data.Username
-				btn.Font = Enum.Font.GothamBold
-				btn.TextColor3 = Color3.fromRGB(255,255,255)
-				btn.TextSize = 13
-
-				local c = Instance.new("UICorner")
-				c.CornerRadius = UDim.new(0,6)
-				c.Parent = btn
-
-				btn.MouseButton1Click:Connect(function()
-
-					local success, placeId, jobId = pcall(function()
-						return player:GetJoinData()
-					end)
-
-					if success and placeId then
-						TeleportService:Teleport(placeId, player)
-					end
-
-				end)
-
-			end
-
-			if not pages.IsFinished then
-				pages:AdvanceToNextPageAsync()
-			end
-
-		until pages.IsFinished
-
-	end
+	until pages.IsFinished
 
 end
 
+-- SEARCH SYSTEM
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+
+	local text = string.lower(searchBox.Text)
+
+	for _,v in pairs(friendList:GetChildren()) do
+		if v:IsA("Frame") then
+			local name = v:FindFirstChildOfClass("TextButton")
+			if name then
+				v.Visible = string.find(string.lower(name.Text),text) ~= nil
+			end
+		end
+	end
+
+end)
+
+refreshBtn.MouseButton1Click:Connect(loadFriends)
+
 loadFriends()
 
-createToggle("Friend Join Menu",function(state)
-	friendFrame.Visible = state
+createToggle("Friend Tracker",function(state)
+	friendGui.Visible = state
 end)
